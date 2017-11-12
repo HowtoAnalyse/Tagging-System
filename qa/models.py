@@ -12,7 +12,7 @@ class UserQAProfile(models.Model):
     """Model class to define a User profile for the app, directly linked
     to the core Django user model."""
     user = AutoOneToOneField(settings.AUTH_USER_MODEL, primary_key=True)
-    points = models.IntegerField(default=0)
+    points = models.IntegerField(default=1)
     # The additional attributes we wish to include.
     website = models.URLField(blank=True)
 

@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'hitcount',
     'django_markdown',
     'annoying',
-    'registration',
+    # 'registration',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,10 +60,10 @@ QA_SETTINGS = {
     }
 }
 
-REGISTRATION_OPEN = True                # If True, users can register
-REGISTRATION_AUTO_LOGIN = False  # If True, the user will be automatically logged in.
-LOGIN_REDIRECT_URL = '/qa/'  # The page you want users to arrive at after they successful log in
-LOGIN_URL = '/accounts/login/'  # The page users are directed to if they are not logged in,
+# REGISTRATION_OPEN = True                # If True, users can register
+# REGISTRATION_AUTO_LOGIN = False  # If True, the user will be automatically logged in.
+# LOGIN_REDIRECT_URL = '/qa'  # The page you want users to arrive at after they successful log in
+LOGIN_URL = '/qa/login/'  # The page users are directed to if they are not logged in,
 
 
 MIDDLEWARE = [

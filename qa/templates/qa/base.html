@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <title>labeler - {% block title %}To add project name{% endblock %}</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <link href="{% static 'css/qa.css' %}" rel="stylesheet"/>
+        <!-- Font Awesome File -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="{% static 'labeler/script.js' %}"></script>
+
+    </head>
+
+    <body>
+
+<div class="page-header">
+  <h1><a href="{% url 'qa_index' %}"><orange>Project Name</orange> </a><small>Text data labeling</small></h1>
+</div>
+
+<div class="container">
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+{% block content %}
+
+{% endblock content %}
+
+</div>
+
+</div>
+
+{% block js %}
+<script>
+$(function () {
+  $('a[href="#search"]').on('click', function(event) {
+    event.preventDefault();
+    $('#search').addClass('open');
+    $('#search > form > input[type="search"]').focus();
+  });
+
+  $('#search, #search button.close').on('click keyup', function(event) {
+    if (event.target == this || event.target.className == 'close' || event.keyCode == 27) {
+      $(this).removeClass('open');
+    }
+  });
+
+});
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+{% endblock js %}
+{%block extra_js %}{% endblock extra_js %}
+    </body>
+</html>

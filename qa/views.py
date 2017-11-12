@@ -1,7 +1,8 @@
 import operator
 from functools import reduce
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model,authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -19,6 +20,8 @@ from .forms import QuestionForm, UserForm, UserProfileForm
 from .mixins import AuthorRequiredMixin, LoginRequired
 from .utils import question_score
 
+from django.http import HttpResponseRedirect, HttpResponse
+
 try:
     qa_messages = 'django.contrib.messages' in settings.INSTALLED_APPS and\
         settings.QA_SETTINGS['qa_messages']
@@ -28,16 +31,6 @@ except AttributeError:  # pragma: no cover
 
 if qa_messages:
     from django.contrib import messages
-
-
-"""Dear maintainer:
-
-Once you are done trying to 'optimize' this routine, and have realized what a
-terrible mistake that was, please increment the following counter as a warning
-to the next guy:
-
-total_hours_wasted_here = 2
-"""
 
 
 class AnswerQuestionView(LoginRequired, View):
@@ -116,8 +109,7 @@ class QuestionIndexView(ListView):
         context = super(
             QuestionIndexView, self).get_context_data(*args, **kwargs)
         noans = Question.objects.order_by('-pub_date').filter(
-            answer__isnull=True).select_related('user')\
-            .annotate(num_answers=Count('answer', distinct=True),
+            answer__isnull=True).annotate(num_answers=Count('answer', distinct=True),
                       num_question_comments=Count('questioncomment',
                       distinct=True))
         context['totalcount'] = Question.objects.count()
@@ -453,26 +445,28 @@ class ParentVoteView(View):
                 vote_target.negative_votes += 1
 
         else:
-            if vote.value == upvote:
-                vote.delete()
-                request.user.userqaprofile.points += -1 if upvote else 1
-                if upvote:
-                    vote_target.positive_votes -= 1
+            raise ValidationError(
+                "You've already labeled")
+            # if vote.value == upvote:
+            #     vote.delete()
+            #     request.user.userqaprofile.points += -1 if upvote else 1
+            #     if upvote:
+            #         vote_target.positive_votes -= 1
 
-                else:
-                    vote_target.negative_votes -= 1
+            #     else:
+            #         vote_target.negative_votes -= 1
 
-            else:
-                request.user.userqaprofile.points += 2 if upvote else -2
-                vote.value = upvote
-                vote.save()
-                if upvote:
-                    vote_target.positive_votes += 1
-                    vote_target.negative_votes -= 1
+            # else:
+            #     request.user.userqaprofile.points += 2 if upvote else -2
+            #     vote.value = upvote
+            #     vote.save()
+            #     if upvote:
+            #         vote_target.positive_votes += 1
+            #         vote_target.negative_votes -= 1
 
-                else:
-                    vote_target.negative_votes += 1
-                    vote_target.positive_votes -= 1
+            #     else:
+            #         vote_target.negative_votes += 1
+            #         vote_target.positive_votes -= 1
 
         request.user.userqaprofile.save()
         if self.model == Question:
@@ -518,5 +512,97 @@ def profile(request, user_id):
     context = {'user': user}
     return render(request, 'qa/profile.html', context)
 
+def register(request):
 
+    # A boolean value for telling the template whether the registration was successful.
+    # Set to False initially. Code changes value to True when registration succeeds.
+    registered = False
 
+    # If it's a HTTP POST, we're interested in processing form data.
+    if request.method == 'POST':
+        # Attempt to grab information from the raw form information.
+        # Note that we make use of both UserForm and UserProfileForm.
+        user_form = UserForm(data=request.POST)
+
+        # If the two forms are valid...
+        if user_form.is_valid():
+            # Save the user's form data to the database.
+            user = user_form.save()
+
+            # Now we hash the password with the set_password method.
+            # Once hashed, we can update the user object.
+            user.set_password(user.password)
+            user.save()
+
+            # Now sort out the UserProfile instance.
+            # Since we need to set the user attribute ourselves, we set commit=False.
+            # This delays saving the model until we're ready to avoid integrity problems.
+            
+            # Update our variable to tell the template registration was successful.
+            registered = True
+
+        # Invalid form or forms - mistakes or something else?
+        # Print problems to the terminal.
+        # They'll also be shown to the user.
+        else:
+            print(user_form.errors)
+
+    # Not a HTTP POST, so we render our form using two ModelForm instances.
+    # These forms will be blank, ready for user input.
+    else:
+        user_form = UserForm()
+
+    # Render the template depending on the context.
+    return render(request,
+            'registration/register.html',
+            {'user_form': user_form, 'registered': registered} )
+
+def user_login(request):
+
+    # If the request is a HTTP POST, try to pull out the relevant information.
+    if request.method == 'POST':
+        # Gather the username and password provided by the user.
+        # This information is obtained from the login form.
+                # We use request.POST.get('<variable>') as opposed to request.POST['<variable>'],
+                # because the request.POST.get('<variable>') returns None, if the value does not exist,
+                # while the request.POST['<variable>'] will raise key error exception
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Use Django's machinery to attempt to see if the username/password
+        # combination is valid - a User object is returned if it is.
+        user = authenticate(username=username, password=password)
+
+        # If we have a User object, the details are correct.
+        # If None (Python's way of representing the absence of a value), no user
+        # with matching credentials was found.
+        if user:
+            # Is the account active? It could have been disabled.
+            if user.is_active:
+                # If the account is valid and active, we can log the user in.
+                # We'll send the user back to the homepage.
+                login(request, user)
+                return HttpResponseRedirect('/qa/')
+            else:
+                # An inactive account was used - no logging in!
+                return HttpResponse("Your Rango account is disabled.")
+        else:
+            # Bad login details were provided. So we can't log the user in.
+            print("Invalid login details: {0}, {1}".format(username, password))
+            return HttpResponse("Invalid login details supplied.")
+
+    # The request is not a HTTP POST, so display the login form.
+    # This scenario would most likely be a HTTP GET.
+    else:
+        # No context variables to pass to the template system, hence the
+        # blank dictionary object...
+        return render(request, 'registration/login.html', {})
+
+# Use the login_required() decorator to ensure only those logged in can access the view.
+@login_required
+def user_logout(request):
+    # Since we know the user is logged in, we can now just log them out.
+    logout(request)
+
+    # Take the user back to the homepage.
+    return HttpResponseRedirect('/qa/')
