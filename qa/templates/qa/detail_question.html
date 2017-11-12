@@ -1,155 +1,157 @@
-{% extends 'qa/base.html' %}
-{% load django_markdown %}
+{% extends "base.html" %}
+
 {% load staticfiles %}
+{% block body_block %}
 
-{% block content %}
-
-{% if question.closed %}
-  <div class="closed"></div>
-{% else %}
-    {% if question.reward %}
-    <div class="rewarding"></div>
-    {% else %}
-    <div class="open"></div>
-    {% endif %}
-{% endif %}
-
-
-{% if message %}
-    <div class="alert alert-danger" role="alert">{{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-{% endif %}
-{% comment %}
-
-{% if question.reward %}
-    <div class="alert alert-info" role="alert">This question has been marked to be worth a reward of <b>{{ question.reward }}<b> points!
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-{% endif %}
-{% endcomment %}
-
-<div class="jumbotron">
-  <div class="row">
-    {% if user.is_authenticated and question.user != user %}
-      <div class ="col-sm-1">
-        <big class="pull-left custom-big"><b>{{ question.total_points }}</b></big>
-      </div>
-      <div class ="col-sm-1">
-        <form action="{% url 'qa_question_vote' question.id %}" method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.path }}">
-          <input type="hidden" name="upvote" value="on">
-          <button type="submit" class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Vote Up this answer"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-        </form>
-          <form action="{% url 'qa_question_vote' question.id %}" method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.path }}">
-          <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" data-placement="bottom" title="Vote Down this answer"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
-        </form>
-      </div>
-    {% endif %}
-    <div class="col-sm-10">
-      <small class="pull-right">Posted by {{ question.user.username }}, {{ question.pub_date }}</small>
-      {% if user.is_authenticated and question.user == user %}<a href="{% url 'qa_update_question' question.id %}"><small class="pull-right">Edit &nbsp;</small></a>{% endif %}
-      <h3><cool>Q: </cool>{{ question.title }}</h3>
-      <h4>{{ question.description|markdown }}</h4>
-      <p>
-      {% if question.closed %}
-          <p class="pull-right">This Question has been closed.</p>
-      {% else %}
-          <a class="btn btn-primary btn-sm pull-right" href="{% url 'qa_create_answer' question.id %}" role="button">Answer this Question!</a>
-          <a class="btn btn-primary btn-sm pull-right" href="{% url 'qa_create_question_comment' question.id %}" role="button">comment this Question!</a>
-      {% endif %}
-      </p>
-    </div>
-  </div>
-</div>
-{% if last_comments %}
-  <h4>comments</h4>
-  {% for comment in last_comments %}
-  <div class="row">
-    <div class="col-md-9 col-md-offset-1">
-    <p><b>{{ comment.comment_text|markdown }}</b><small>, <a href="{% url 'qa_profile' comment.user.id %}">{{ comment.user.username }}</a> <div class="pull-right">{{ comment.pub_date }}</div></small></p>{% if comment.user == user %}<a href="{% url 'qa_update_question_comment' comment.id %}" class="pull-right"><small>Edit &nbsp;</small></a>{% endif %}
-    </div>
-  </div>
-  {% endfor %}
-{% endif %}
-{% if answers %}
-  <h3>Answers</h3>
-  <hr/>
-
-    {% for answer in answers %}
-    <div class="row">
-      {% if user.is_authenticated and answer.user != user %}
-      <div class ="col-md-1">
-        <div class="row">
-          <div class ="col-sm-1"><big class="pull-left custom-big"><b>{{ answer.total_points }}</b></big></div>
-          <div class ="col-sm-1">
-          <form action="{% url 'qa_answer_vote' answer.id %}" method="POST">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.path }}">
-              <input type="hidden" name="upvote" value="on">
-              <button type="submit" class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Vote Up this answer"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-          </form>
-          <form action="{% url 'qa_answer_vote' answer.id %}" method="POST">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.path }}">
-              <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" data-placement="bottom" title="Vote Down this answer"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></div>
-          </form>
-        </div>
-      </div>
-      {% endif %}
-      <div class ="col-md-9">
-        <a href="{% url 'qa_create_answer_comment' answer.id %}" class="pull-right"><small><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> Comment &nbsp;</small></a>
-        {% if answer.user == user %}<a href="{% url 'qa_update_answer' answer.id %}" class="pull-right"><small>Edit &nbsp;</small></a>{% endif %}
-            <div id="ans" class="alert alert-primary" role="alert">{{ answer.answer_text|markdown }}</div>
-        {% if answer.answercomment_set %}
-          {% for comment in answer.answercomment_set.all %}
-            <p><b>{{ comment.comment_text|markdown }}</b><small>, <a href="{% url 'qa_profile' comment.user.id %}">{{ comment.user.username }}</a> <div class="pull-right">{{ comment.pub_date }}</div></small></p>{% if comment.user == user %}<a href="{% url 'qa_update_answer_comment' comment.id %}" class="pull-right"><small>Edit &nbsp;</small></a>{% endif %}
-          <hr>
-          {% endfor %}
-        {% endif %}
-      </div>
-          <div class ="col-md-2">
-            {% if answer.user.userqaprofile.picture %}
-                <img class="pull-right" src="{{ answer.user.userqaprofile.picture }}">
-            {% else %}
-                <img class="pull-right" width="50px" height="50px" src="{% static "qa/user.png" %}">
-            {% endif %}
-            <p class="pull-right">- <b><a href="{% url 'qa_profile' answer.user.id %}">{{ answer.user.username }}</a> ({{ answer.user.userqaprofile.points }})</b></p>
-                {% if user.is_authenticated and answer.question.user == user and answer.question.closed == False %}
-                    <form action="{% url 'qa_close_question' question.id %}" method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.path }}"/>
-                        <button type="submit" class="btn btn-success btn-sm pull-right" data-toggle="tooltip" data-placement="bottom" title="Close this question"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button></div>
-                    </form>
-                {% else %}
-                    {% if  answer.answer == True %}
-                        <button class="btn btn-success btn-sm pull-right" title="Picked Answer"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button></div>
-                    {% endif %}
-                {% endif %}
+ <div class="container app">
+    <div class="row app-one">
+     <!-- Conversation Start -->
+      <div class="col-sm-8 conversation">
+        <!-- Heading -->
+        <div class="row heading">
+          <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
+            <div class="heading-avatar-icon">
+              <img src="http://shurl.esy.es/y">
+            </div>
           </div>
+          <div class="col-sm-8 col-xs-7 heading-name">
+            <a class="heading-name-meta">Sara
+            </a>
+            <span class="heading-online">Online</span>
+          </div>
+          <div class="col-sm-1 col-xs-1  heading-dot pull-right">
+            <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
+          </div>
+        </div>
+        <!-- Heading End -->
+
+        <!-- Message Box -->
+        <div class="row message" id="conversation">
+
+          <div class="row message-previous">
+            <div class="col-sm-12 previous">
+              <a onclick="previous(this)" id="sara" name="20">
+              Show Previous Message!
+              </a>
+            </div>
+          </div>
+
+          <div class="row message-body">
+            <div class="col-sm-12 message-main-receiver">
+              <div class="receiver">
+              <span class="message-time pull-right">
+                  Merchant
+                </span>
+                <div class="message-text">
+              {{ question.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row message-body">
+            <div class="col-sm-12 message-main-sender">
+              <div class="sender">
+                <span class="message-time pull-right">
+                  Customer
+                </span>
+                <div class="message-text">
+              {{ question.description }}
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Message Box End -->
+
+        <!-- Reply Box -->
+        <div class="row reply">
+          <div class="col-sm-1 col-xs-1 reply-emojis">
+            <i class="fa fa-smile-o fa-2x"></i>
+          </div>
+          <div class="col-sm-9 col-xs-9 reply-main">
+            <textarea class="form-control" rows="1" id="comment"></textarea>
+          </div>
+          <div class="col-sm-1 col-xs-1 reply-recording">
+            <i class="fa fa-microphone fa-2x" aria-hidden="true"></i>
+          </div>
+          <div class="col-sm-1 col-xs-1 reply-send">
+            <i class="fa fa-send fa-2x" aria-hidden="true"></i>
+          </div>
+        </div>
+        <!-- Reply Box End -->
+      </div>
+      <!-- Conversation End -->
+
+      <div class="col-sm-4 side">
+        <div class="side-one">
+          <!-- Heading -->
+          <div class="row heading">
+            <div class="col-sm-3 col-xs-3 heading-avatar">
+              <div class="heading-avatar-icon">
+                <img src="http://shurl.esy.es/y">
+              </div>
+            </div>
+            <div class="col-sm-1 col-xs-1  heading-dot  pull-right">
+              <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
+            </div>
+            <div class="col-sm-2 col-xs-2 heading-compose  pull-right">
+              <i class="fa fa-comments fa-2x  pull-right" aria-hidden="true"></i>
+            </div>
+          </div>
+          <!-- Heading End -->
+
+          <!-- SearchBox -->
+          <div class="row searchBox">
+            <div class="col-sm-12 searchBox-inner">
+              <div class="form-group has-feedback">
+                <input id="searchText" type="text" class="form-control" name="searchText" placeholder="Search">
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Box End -->
+          <!-- sideBar -->
+          <div class="row sideBar">
+            {% csrf_token %}
+            {% for answer in answers %}
+                <div class="row sideBar-body">
+                  <div class="col-sm-3 col-xs-3 sideBar-avatar">
+                    <div class="avatar-icon">
+  <form action="{% url 'qa_answer_vote' answer.id %}" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <input type="hidden" name="upvote" value="on">
+      <button type="submit" class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Vote Up this answer"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+</form>
+
+                    </div>
+                  </div>
+                  <div class="col-sm-9 col-xs-9 sideBar-main">
+                    <div class="row">
+                      <div class="col-sm-8 col-xs-8 sideBar-name">
+                        <label for="choice{{ forloop.counter }}">{{ answer.answer_text }}</label><br />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+            {% endfor %}
+          </div>
+          <!-- Sidebar End -->
+        </div>
+        
+        <!-- Sidebar End -->
+      </div>
+
+
+      <!-- New Message Sidebar End -->
+
+     
     </div>
-  <hr>
-    {% endfor %}
-
-{% else %}
-<img class="pull-right" src="{% static "qa/question.jpg" %}" alt="question"/>
-<center><h2>This question is still open, <a href="{% url 'qa_create_answer' question.id %}" role="button">Write answer!</a></h2></center>
-{% endif %}
+    <!-- App One End -->
+  </div>
 
 
-{% endblock content %}
-{% block extra_js %}
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script>
-$(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-})
-</script>
-{% endblock extra_js %}
+{% endblock %}

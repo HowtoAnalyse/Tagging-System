@@ -28,12 +28,12 @@ class UserQAProfile(models.Model):
 class Question(models.Model, HitCountMixin):
     """Model class to contain every question in the forum"""
     slug = models.SlugField(max_length=200)
-    title = models.CharField(max_length=200, blank=False)
-    description = models.CharField(max_length=200)
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=200, blank=False)
     pub_date = models.DateTimeField('date published', auto_now_add=True)
     tags = TaggableManager()
     reward = models.IntegerField(default=0)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL)
     closed = models.BooleanField(default=False)
     positive_votes = models.IntegerField(default=0)
     negative_votes = models.IntegerField(default=0)
@@ -48,13 +48,11 @@ class Question(models.Model, HitCountMixin):
             except KeyError:
                 points = 0
 
-            self.user.userqaprofile.modify_reputation(points)
-
         self.total_points = self.positive_votes - self.negative_votes
         super(Question, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return self.description
 
 
 class Answer(models.Model):
@@ -64,7 +62,7 @@ class Answer(models.Model):
     answer_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published', auto_now_add=True)
     updated = models.DateTimeField('date updated', auto_now=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL)
     answer = models.BooleanField(default=False)
     positive_votes = models.IntegerField(default=0)
     negative_votes = models.IntegerField(default=0)
@@ -77,7 +75,6 @@ class Answer(models.Model):
         except KeyError:
             points = 0
 
-        self.user.userqaprofile.modify_reputation(points)
         self.total_points = self.positive_votes - self.negative_votes
         super(Answer, self).save(*args, **kwargs)
 
@@ -113,6 +110,7 @@ class QuestionVote(VoteParent):
         unique_together = (('user', 'question'),)
 
 
+
 class BaseComment(models.Model):
     """Abstract model to define the basic elements to every single comment."""
     pub_date = models.DateTimeField('date published', auto_now_add=True)
@@ -137,7 +135,6 @@ class AnswerComment(BaseComment):
         except KeyError:
             points = 0
 
-        self.user.userqaprofile.modify_reputation(points)
         super(AnswerComment, self).save(*args, **kwargs)
 
 
@@ -153,5 +150,4 @@ class QuestionComment(BaseComment):
         except KeyError:
             points = 0
 
-        self.user.userqaprofile.modify_reputation(points)
         super(QuestionComment, self).save(*args, **kwargs)

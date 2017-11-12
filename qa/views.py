@@ -50,22 +50,22 @@ class AnswerQuestionView(LoginRequired, View):
 
     def post(self, request, answer_id):
         answer = get_object_or_404(self.model, pk=answer_id)
-        if answer.question.user != request.user:
-            raise ValidationError(
-                "Sorry, you're not allowed to close this question.")
+        # if answer.question.user != request.user:
+        #     raise ValidationError(
+        #         "Sorry, you're not allowed to close this question.")
 
-        else:
-            answer.question.answer_set.update(answer=False)
-            answer.answer = True
-            answer.save()
-            try:
-                points = settings.QA_SETTINGS['reputation']['ACCEPT_ANSWER']
+        # else:
+        answer.question.answer_set.update(answer=False)
+        answer.answer = True
+        answer.save()
+        try:
+            points = settings.QA_SETTINGS['reputation']['ACCEPT_ANSWER']
 
-            except KeyError:
-                points = 0
+        except KeyError:
+            points = 0
 
-            qa_user = UserQAProfile.objects.get(user=answer.user)
-            qa_user.modify_reputation(points)
+        qa_user = UserQAProfile.objects.get(user=answer.user)
+        qa_user.modify_reputation(points)
 
         next_url = request.POST.get('next', '')
         if next_url is not '':
@@ -150,7 +150,6 @@ class QuestionIndexView(ListView):
 
     def get_queryset(self):
         queryset = super(QuestionIndexView, self).get_queryset()\
-            .select_related('user')\
             .annotate(num_answers=Count('answer', distinct=True),
                       num_question_comments=Count('questioncomment',
                       distinct=True))
@@ -391,10 +390,7 @@ class QuestionDetailView(HitCountDetailView):
         context = super(QuestionDetailView, self).get_context_data(**kwargs)
         context['last_comments'] = self.object.questioncomment_set.order_by(
             'pub_date')[:5]
-        context['answers'] = list(answers.select_related(
-            'user').select_related(
-            'user__userqaprofile')
-            .annotate(answercomment_count=Count('answercomment')))
+        context['answers'] = list(answers.annotate(answercomment_count=Count('answercomment')))
         return context
 
     def get(self, request, **kwargs):
@@ -438,64 +434,68 @@ class ParentVoteView(View):
 
     def post(self, request, object_id):
         vote_target = get_object_or_404(self.model, pk=object_id)
-        if vote_target.user == request.user:
-            raise ValidationError(
-                'Sorry, voting for your own answer is not possible.')
+        # if vote_target.user == request.user:
+        #     raise ValidationError(
+        #         'Sorry, voting for your own answer is not possible.')
+
+        # else:
+        upvote = request.POST.get('upvote', None) is not None
+        object_kwargs = self.get_vote_kwargs(request.user, vote_target)
+        vote, created = self.vote_model.objects.get_or_create(
+            defaults={'value': upvote},
+            **object_kwargs)
+        if created:
+            request.user.userqaprofile.points += 1 if upvote else -1
+            if upvote:
+                vote_target.positive_votes += 1
+
+            else:
+                vote_target.negative_votes += 1
 
         else:
-            upvote = request.POST.get('upvote', None) is not None
-            object_kwargs = self.get_vote_kwargs(request.user, vote_target)
-            vote, created = self.vote_model.objects.get_or_create(
-                defaults={'value': upvote},
-                **object_kwargs)
-            if created:
-                vote_target.user.userqaprofile.points += 1 if upvote else -1
+            if vote.value == upvote:
+                vote.delete()
+                request.user.userqaprofile.points += -1 if upvote else 1
+                if upvote:
+                    vote_target.positive_votes -= 1
+
+                else:
+                    vote_target.negative_votes -= 1
+
+            else:
+                request.user.userqaprofile.points += 2 if upvote else -2
+                vote.value = upvote
+                vote.save()
                 if upvote:
                     vote_target.positive_votes += 1
+                    vote_target.negative_votes -= 1
 
                 else:
                     vote_target.negative_votes += 1
+                    vote_target.positive_votes -= 1
 
-            else:
-                if vote.value == upvote:
-                    vote.delete()
-                    vote_target.user.userqaprofile.points += -1 if upvote else 1
-                    if upvote:
-                        vote_target.positive_votes -= 1
+        request.user.userqaprofile.save()
+        if self.model == Question:
+            vote_target.reward = question_score(vote_target)
 
-                    else:
-                        vote_target.negative_votes -= 1
+        if self.model == Answer:
+            vote_target.question.reward = question_score(
+                vote_target.question)
+            vote_target.question.save()
 
-                else:
-                    vote_target.user.userqaprofile.points += 2 if upvote else -2
-                    vote.value = upvote
-                    vote.save()
-                    if upvote:
-                        vote_target.positive_votes += 1
-                        vote_target.negative_votes -= 1
+        vote_target.save()
 
-                    else:
-                        vote_target.negative_votes += 1
-                        vote_target.positive_votes -= 1
+        # next_url = request.POST.get('next', '')
+        # if next_url is not '':
+        #     return redirect(next_url)
 
-            vote_target.user.userqaprofile.save()
-            if self.model == Question:
-                vote_target.reward = question_score(vote_target)
-
-            if self.model == Answer:
-                vote_target.question.reward = question_score(
-                    vote_target.question)
-                vote_target.question.save()
-
-            vote_target.save()
-
-        next_url = request.POST.get('next', '')
-        if next_url is not '':
-            return redirect(next_url)
-
-        else:
-            return redirect(reverse('qa_index'))
-
+        # else:
+        nextpk = vote_target.question.pk+1
+        # try: 
+        return redirect(reverse('qa_detail', kwargs={'pk': nextpk}))
+        # except:
+        #     return redirect(reverse('qa_index'))
+ 
 
 class AnswerVoteView(ParentVoteView):
     """

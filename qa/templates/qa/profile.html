@@ -1,15 +1,13 @@
-{% extends 'qa/base.html' %}
-{% load django_markdown %}
+{% extends "base.html" %}
 
-{% block content %}
-<h2 class="pull-right">Points: {{ user.points }}</h1>
+{% load staticfiles %}
+{% block body_block %}
+
+<h2 class="pull-right">Question labeled: {{ user.points }}</h1>
 <ul>
-  <li><b>Website :</b> {{ user.website }} </li>
-   <li><b>e-mail :</b> {{ user.user.email }} </li>
-   <li><b>Date Joined :</b> {{ user.user.date_joined }} </li>
+   <li><b>Date Started :</b> {{ user.user.date_joined }} </li>
    <li><b>Last Login :</b> {{ user.user.last_login }} </li>
    <li><b>is Active :</b> {{ user.user.is_active }} </li>
 <ul>
 
-</div>
-{% endblock content %}
+{% endblock %}
