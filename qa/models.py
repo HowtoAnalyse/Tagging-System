@@ -38,6 +38,7 @@ class Question(models.Model, HitCountMixin):
     positive_votes = models.IntegerField(default=0)
     negative_votes = models.IntegerField(default=0)
     total_points = models.IntegerField(default=0)
+    order = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -53,6 +54,18 @@ class Question(models.Model, HitCountMixin):
 
     def __str__(self):
         return self.description
+
+class Conversation(models.Model):
+    question = models.ForeignKey(Question)
+    roundid = models.IntegerField()
+    speaker = models.CharField(max_length=200)
+    Conversation_txt = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.Conversation_txt
+
+    class Meta:
+        ordering = ['roundid']
 
 
 class Answer(models.Model):

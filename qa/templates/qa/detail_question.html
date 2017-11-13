@@ -35,33 +35,47 @@
               </a>
             </div>
           </div>
-
+{% for c in conv %}
           <div class="row message-body">
-            <div class="col-sm-12 message-main-receiver">
+          {% if c.speaker == "i" %}
+    <div class="col-sm-12 message-main-receiver">
               <div class="receiver">
               <span class="message-time pull-right">
                   Merchant
                 </span>
                 <div class="message-text">
-              {{ question.description }}
+              {{ c.Conversation_txt }}
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="row message-body">
-            <div class="col-sm-12 message-main-sender">
+{% elif c.speaker == "he" %}
+    <div class="col-sm-12 message-main-sender">
               <div class="sender">
                 <span class="message-time pull-right">
                   Customer
                 </span>
                 <div class="message-text">
-              {{ question.description }}
+              {{ c.Conversation_txt }}
                 </div>
 
               </div>
             </div>
+{% else %}
+    <div class="col-sm-12 message-main-sender">
+              <div class="sender">
+                <span class="message-time pull-right">
+                  Customer
+                </span>
+                <div class="message-text">
+              {{ c.Conversation_txt }}
+                </div>
+
+              </div>
+            </div>
+{% endif %}
+            
           </div>
+{% endfor %}
         </div>
         <!-- Message Box End -->
 

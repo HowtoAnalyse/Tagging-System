@@ -1,22 +1,14 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <!-- Is anyone getting tired of repeatedly entering the header over and over?? -->
-        <title>Rango</title>
-    </head>
+{% extends "qa/base.html" %}
 
-    <body>
-        <h1>Login to </h1>
+{% block content %}
+<h1>Login</h1>
+        <form method="post" action=".">
+                {% csrf_token %}
+                {{ form.as_p }}
 
-        <form id="login_form" method="post" action="/qa/login/">
-            {% csrf_token %}
-            Username: <input type="text" name="username" value="" size="50" />
-            <br />
-            Password: <input type="password" name="password" value="" size="50" />
-            <br />
+                <input type="submit" value="Log in" />
+                <input type="hidden" name="next" value="{{ next }}" />
+                </form>
 
-            <input type="submit" value="submit" />
-        </form>
-
-    </body>
-</html>
+        <p>Not  a member? <a href="{% url 'registration_register' %}">Register</a>!</p>
+{% endblock %}

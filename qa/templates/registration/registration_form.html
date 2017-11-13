@@ -1,9 +1,7 @@
-{% extends "base.html" %}
+{% extends "qa/base.html" %}
 
-{% block body_block %}
-{% if request.user.is_authenticated %}
-<a href="/user_profile/{{ request.user.id }}">Update Profile</a>
-{% else %}
+
+{% block content %}
 <h1>Register Here</h1>
         <form method="post" action=".">
                 {% csrf_token %}
@@ -11,5 +9,4 @@
 
                 <input type="submit" value="Submit" />
         </form>
-{% endif %}
 {% endblock %}
