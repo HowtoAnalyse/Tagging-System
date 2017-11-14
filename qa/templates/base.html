@@ -13,10 +13,12 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
       <script type="text/javascript" src="{% static 'labeler/script.js' %}"></script>
-
+<style type="text/css">
+  {% block extra_css %}{% endblock extra_css %}
+</style>
     </head>
 
     <body>
-            {% block body_block %}{% endblock %}
+            {% block body_block %}{% endblock body_block%}
     </body>
 </html>

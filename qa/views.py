@@ -513,4 +513,3 @@ def profile(request, user_id):
     user = UserQAProfile.objects.get(user=user_ob)
     context = {'user': user}
     return render(request, 'qa/profile.html', context)
-

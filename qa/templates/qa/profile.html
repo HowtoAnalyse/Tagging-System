@@ -1,10 +1,9 @@
-{% extends "base.html" %}
+{% extends "qa/base.html" %}
 
 {% load staticfiles %}
-{% block body_block %}
+{% block content %}
 
 
-<a href="{% url 'qa_detail' user.points %}">Start labeling</a><br />
 
 <h2 class="pull-right">Question labeled: {{ user.points }}</h1>
 <ul>
@@ -12,7 +11,8 @@
    <li><b>Last Login :</b> {{ user.user.last_login }} </li>
    <li><b>is Active :</b> {{ user.user.is_active }} </li>
 <ul>
-<a href="/qa/logout/">Logout</a><br />
+<a href="/accounts/logout/">Logout</a><br />
+<a href="{% url 'qa_detail' user.points %}">Start labeling</a><br />
 
 
 
