@@ -1,10 +1,27 @@
 import pandas as pd
-import sqlite3
+raw = pd.read_csv("qa/static/data/raw.csv")
+import os
 
-raw = pd.read_csv("qa/static/labeler/conv.csv")
-raw = raw.fillna("NA")
+raw = raw.fillna("...")
+msgID = raw['msg_id'].unique()
+
+directory = "qa/static/data/batch"
+n=0
+for i in msgID:
+	fID = str(n//800+1)
+	newDir = directory+fID+"/"
+	if not os.path.exists(newDir):
+		os.makedirs(newDir)
+	newDF = raw[raw['msg_id']==i]
+	newDF.to_csv(newDir+"msg"+str(n)+".csv", index=False,encoding='utf-8')
+	n += 1
+
+
+
+
 # df = raw[['round', 'speaker','text','msg_id']]
 # df.columns = ['roundid', 'speaker', 'Conversation_txt', 'question_id']
+import sqlite3
 
 conn = sqlite3.connect('db.sqlite3')
 tmpDF = pd.DataFrame()
