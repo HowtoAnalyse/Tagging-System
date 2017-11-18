@@ -1,8 +1,20 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <title>To add project name</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <link rel="stylesheet" type="text/css" href="../../static/labeler/style.css" />
+        <!-- Font Awesome File -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="../../static/labeler/script.js"></script>
+      <script type="text/javascript" src="../../static/labeler/d3.js"></script>
 
-{% load staticfiles %}
-  <!--<![endif]-->
-{% block body_block %}
+    </head>
+    <body>
 <div class="container app">
     <div class="row app-one">
      <!-- Conversation Start -->
@@ -11,7 +23,7 @@
         <div class="row heading">
           <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
             <div class="heading-avatar-icon">
-              <img src="{% static 'labeler/teeth.png' %}">
+              <img src="../../static/labeler/teeth.png">
             </div>
           </div>
           <div class="col-sm-8 col-xs-7 heading-name">
@@ -66,7 +78,7 @@
           <div class="row heading">
             <div class="col-sm-3 col-xs-3 heading-avatar">
               <div class="heading-avatar-icon">
-                <img src="{% static 'labeler/teeth.png' %}">
+                <img src="../../static/labeler/teeth.png">
               </div>
             </div>
             <div class="col-sm-1 col-xs-1  heading-dot  pull-right">
@@ -83,30 +95,49 @@
           <!-- SearchBox -->
           <div class="row searchBox">
             <div class="col-sm-12 searchBox-inner">
-              <div class="form-group has-feedback">
+<!--               请提取关键词:
               <form id="form" onsubmit="return false;">
             <input class="form-control" type="text" id="userInput" >
-            
-             <!-- <input id="searchText" type="text" class="form-control" name="searchText" placeholder="Search"> -->
-                </form>
+                </form> -->
+
+            </div>
+
+          </div>
+          <!-- <div class="row searchBox">
+            <div class="col-sm-12 searchBox-inner">
+              <div class="form-group has-feedback">
+              客服的目的是:
+              <select>
+  <option value="volvo">跟进</option>
+  <option value="saab">注册</option>
+</select>
 
               </div>
             </div>
-          </div>
+          </div> -->
+<!--           <div class="row searchBox">
+            <div class="col-sm-12 searchBox-inner">
+              <div class="form-group has-feedback">
+              客户的态度是:
+              <select>
+  <option value="volvo">接受</option>
+  <option value="saab">拒绝</option>
+    <option value="saab">无视</option>
+
+</select>
+
+              </div>
+            </div>
+          </div> -->
 
           <!-- Search Box End -->
           <!-- sideBar -->
           <div class="row sideBar">
                 <div class="row sideBar-body">
-                  <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                    <div class="avatar-icon">
-
-                    </div>
-                  </div>
                   <div class="col-sm-9 col-xs-9 sideBar-main">
                     <div class="row">
                       <div class="col-sm-8 col-xs-8 sideBar-name">
-                      <!-- <a href='#' onclick='downloadCSV({ filename: "stock-data.csv" });'>Submit</a> -->
+                     <!-- <a href='#' onclick='downloadCSV({ filename: "stock-data.csv" });'>Submit</a> -->
                       <input style="position:absolute; top:50%; left:5%; width:40%;" type="submit" onclick="othername();" />
                       </div>
                     </div>
@@ -128,8 +159,7 @@
     <!-- App One End -->
   </div>
 
-  <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
-  <script type="text/javascript" charset="utf-8">
+  <script type="text/javascript" charset="utf-8">    
 
 function updateG(data) {
   var parent = d3.select("body").selectAll(".message-body")
@@ -158,20 +188,42 @@ function updateG(data) {
                     .text(function(d) {
                         return d.text;
                     });
+
+  var byRound = d3.nest()
+  .key(function(d) { return d.round; })
+  .key(function(d) {return d.round_center_bool; })
+  .entries(data);
+
+  var answr = d3.select("body").select(".searchBox-inner")
+  answr.selectAll("p").data(byRound).enter().append("p").text(function(d) {
+    if (d.values[0].key == 1) {return "客服的目的是:"}
+     else if (d.values[0].key == 2) { return "客户的态度是:"} 
+      else {return "请提取关键词:"}
+
+  });
+
+  answr.selectAll("div").data(byRound).enter().append("div").append(function(d) {
+    if (d.values[0].key == 0) {return "form"}
+      else {return "select"}
+  })
+
+  
+            //   <form id="form" onsubmit="return false;">
+            // <input class="form-control" type="text" id="userInput" >
+            //     </form>
+
 }
 
 f = 0
 while (f<11) {
   try {
-    fileName = "{% static 'data/batch"+f+"/msg7200.csv' %}"
+    fileName = "data/batch"+f+"/msg7200.csv"
       d3.csv(fileName, function(data) {
         updateG(data);
       });
   } catch (e) {};
     f++;
-};
-
-    
+}; 
       
       // var bod = d3.select('.message-body').data(data).enter().append('div');
       // bod.enter().append('span')
@@ -282,4 +334,5 @@ function othername() {
 }
   </script>
 
-{% endblock body_block %}
+</body>
+</html>

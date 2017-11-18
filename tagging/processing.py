@@ -1,9 +1,15 @@
 import pandas as pd
-raw = pd.read_csv("qa/static/data/raw.csv")
+raw = pd.read_csv("qa/static/labeler/data/raw.csv")
 import os
 
-raw = raw.fillna("...")
+raw = raw.fillna("...") #96180
 msgID = raw['msg_id'].unique()
+
+centerRound = raw[raw["round_center_bool"]==1] #28050
+# raw.loc[(raw["msg_id"] ==108679) & (raw["round"] == 3),"round_center_bool"]
+
+for idx, row in centerRound.iterrows():
+	raw.loc[(raw["msg_id"] ==row["msg_id"]) & (raw["round"] == row["round"]+1),"round_center_bool"]=2
 
 directory = "qa/static/data/batch"
 n=0
@@ -16,7 +22,11 @@ for i in msgID:
 	newDF.to_csv(newDir+"msg"+str(n)+".csv", index=False,encoding='utf-8')
 	n += 1
 
+%timeit df.set_value('C', 'x', 10)
 
+%timeit df['x']['C'] = 10
+
+%timeit df.at['C', 'x'] = 10
 
 
 # df = raw[['round', 'speaker','text','msg_id']]
