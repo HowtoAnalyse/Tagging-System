@@ -92,61 +92,24 @@
           </div>
           <!-- Heading End -->
 
-          <!-- SearchBox -->
-          <div class="row searchBox">
-            <div class="col-sm-12 searchBox-inner">
-<!--               请提取关键词:
-              <form id="form" onsubmit="return false;">
-            <input class="form-control" type="text" id="userInput" >
-                </form> -->
-
-            </div>
-
-          </div>
-          <!-- <div class="row searchBox">
-            <div class="col-sm-12 searchBox-inner">
-              <div class="form-group has-feedback">
-              客服的目的是:
-              <select>
-  <option value="volvo">跟进</option>
-  <option value="saab">注册</option>
-</select>
-
-              </div>
-            </div>
-          </div> -->
-<!--           <div class="row searchBox">
-            <div class="col-sm-12 searchBox-inner">
-              <div class="form-group has-feedback">
-              客户的态度是:
-              <select>
-  <option value="volvo">接受</option>
-  <option value="saab">拒绝</option>
-    <option value="saab">无视</option>
-
-</select>
-
-              </div>
-            </div>
-          </div> -->
-
-          <!-- Search Box End -->
           <!-- sideBar -->
           <div class="row sideBar">
-                <div class="row sideBar-body">
-                  <div class="col-sm-9 col-xs-9 sideBar-main">
-                    <div class="row">
-                      <div class="col-sm-8 col-xs-8 sideBar-name">
-                     <!-- <a href='#' onclick='downloadCSV({ filename: "stock-data.csv" });'>Submit</a> -->
-                      <input style="position:absolute; top:50%; left:5%; width:40%;" type="submit" onclick="othername();" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
           </div>
           <!-- Sidebar End -->
+          <!-- SearchBox -->
+<!--           <div class="row searchBox">
+            <div class="col-sm-12 searchBox-inner">
+                     <a href='#' onclick='downloadCSV({ filename: "stock-data.csv" });'>Submit</a>
+                      <input style="position:absolute; top:50%; left:5%; width:40%;" type="submit" onclick="othername();" />
+
+            </div>
+            </div> -->
+                      <!-- Search Box End -->
+        <p id="demo"></p>
+
         </div>
+
         
         <!-- Sidebar End -->
       </div>
@@ -159,11 +122,21 @@
     <!-- App One End -->
   </div>
 
-  <script type="text/javascript" charset="utf-8">    
+  <script type="text/javascript" charset="utf-8">   
+function ResSubmit() {
+  labels = [];
+  var usrInput = document.getElementsByClassName("keywords");
+  var combined = document.getElementById("demo");
+  // combined.innerHTML = usrInput
+  for(var i=0; i < usrInput.length; i++) { 
+    labels.push(usrInput[i].value);}
 
-function updateG(data) {
-  var parent = d3.select("body").selectAll(".message-body")
-  var bod = parent.selectAll("div").data(data).enter().append('div')
+  combined.innerHTML = labels;
+}
+
+function updateG(data, fileNumber) {
+  var parent = d3.select("body").selectAll(".message-body").selectAll("div").data(data)
+  var bod = parent.enter().append('div')
             .attr("class", function(d) {
                 if (d.speaker == "i") {return "col-sm-12 message-main-receiver"}
                 else {return "col-sm-12 message-main-sender"}
@@ -194,69 +167,84 @@ function updateG(data) {
   .key(function(d) {return d.round_center_bool; })
   .entries(data);
 
-  var answr = d3.select("body").select(".searchBox-inner")
-  answr.selectAll("p").data(byRound).enter().append("p").text(function(d) {
+  var answr = d3.select("body").selectAll(".sideBar").selectAll("div").data(byRound)
+  var answrbod = answr.enter().append("div")
+  .attr("class", function(d) {
+    if (d.values[0].key == 1) {return "row sideBar-body msg1"}
+     else if (d.values[0].key == 2) { return "row sideBar-body msg2"} 
+      else {return "row sideBar-body msg0"}
+    })
+  .text(function(d) {
     if (d.values[0].key == 1) {return "客服的目的是:"}
      else if (d.values[0].key == 2) { return "客户的态度是:"} 
       else {return "请提取关键词:"}
-
   });
 
-  answr.selectAll("div").data(byRound).enter().append("div").append(function(d) {
-    if (d.values[0].key == 0) {return "form"}
-      else {return "select"}
-  })
+  var forms = d3.selectAll(".msg0").append("form")
+    .attr({
+      "id": "form",
+      "onsubmit":"return false;"
+    })
+  forms.append("input")
+    .attr({
+      "class":"form-control keywords",
+      "type":"text",
+    })
 
-  
-            //   <form id="form" onsubmit="return false;">
-            // <input class="form-control" type="text" id="userInput" >
-            //     </form>
+  var centers = d3.selectAll(".msg1").append("select").attr("class","keywords")
+  centers.append("option").attr("value", "follow up").text("跟进")
+  centers.append("option").attr("value", "sign up").text("注册")
 
+  var center2 = d3.selectAll(".msg2").append("select").attr("class","keywords")
+  center2.append("option").attr("value", "accept").text("接受")
+  center2.append("option").attr("value", "reject").text("拒绝")
+  center2.append("option").attr("value", "ignore").text("无视")
+}
+
+function getData(f) {
+  fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
+  d3.csv(fileName, function(error, data) {
+    if (error) {
+      f++;
+      getData(f);
+    }
+      else {
+        updateG(data, f);
+      };
+  });
 }
 
 f = 0
-while (f<11) {
-  try {
-    fileName = "data/batch"+f+"/msg7200.csv"
-      d3.csv(fileName, function(data) {
-        updateG(data);
-      });
-  } catch (e) {};
-    f++;
-}; 
-      
-      // var bod = d3.select('.message-body').data(data).enter().append('div');
-      // bod.enter().append('span')
-      // var titles = d3.keys(data[0]);
-      // var headers = table.append('thead').append('tr')
-      //                  .selectAll('th')
-      //                  .data(titles).enter()
-      //                  .append('th')
-      //                  .text(function (d) {
-      //                     return d;
-      //                   })
-      //                  .on('click', function (d) {
-      //                    headers.attr('class', 'header');
-      //                  });
+getData(f)
 
-      // var rows = table.append('tbody').selectAll('tr')
-      //              .data(data).enter()
-      //              .append('tr');
-      // rows.selectAll('td')
-      //   .data(function (d) {
-      //     return titles.map(function (k) {
-      //       return { 'value': d[k], 'name': k};
-      //     });
-      //   }).enter()
-      //   .append('td')
-      //   .classed('selected', function(d) {return d._selected;})
-      //   .attr('data-th', function (d) {
-      //     return d.name;
-      //   })
-      //   .text(function (d) {
-      //     return d.value;
-      //   });
-    // });
+d3.selectAll(".sideBar").append("input")
+  .attr({
+    // "style":"position:absolute; top:50%; left:5%; width:40%;",
+    "type":"submit",
+    // "onclick":"ResSubmit();"
+  })
+  .on("click", function(){
+    ResSubmit();
+  })
+d3.selectAll(".sideBar").append("input")
+.attr({
+  // "style":"position:absolute; top:50%; left:5%; width:40%;",
+  "type":"button",
+  "name":"getNext",
+  "value":"Next Message",
+})
+.on("click", function() {
+  d3.select("body").selectAll(".message-body").selectAll("div").remove();
+  d3.select("body").selectAll(".sideBar").selectAll("div").remove();
+  f++;
+  fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
+  d3.csv(fileName, function(error, data) {
+    updateG(data, f);
+    console.log(f);
+  })
+})
+
+
     var stockData = [
         {
             Symbol: "AAPL",
@@ -326,12 +314,7 @@ while (f<11) {
         link.setAttribute('download', filename);
         link.click();
     }
-labels = [];
-function othername() {
-    var input = document.getElementById("userInput").value;
-    labels.push(labels);
-    console.log(labels);
-}
+
   </script>
 
 </body>

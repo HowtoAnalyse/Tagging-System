@@ -1,13 +1,30 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
 <script type="text/javascript" src="../../static/labeler/d3.js"></script>
 
 <script type="text/javascript">
-	d3.csv("data/batch1/msg0.csv", function(data) {
-  console.log(data[0]);
-});
+function getData(f) {
+	fileName = "data/batch"+Math.floor(f/800)+"/msg"+f+".csv"
+	d3.csv(fileName, function(error, data) {
+    if (error) {
+    	f++;
+    	getData(f);
+    }
+    	else {
+    		console.log(data[0])
+    	}
+  });
+}
+
+f = 0
+getData(f)
+
 </script>
+</body>
 
 
-d3.csv("data/batch10/msg7200.csv", function(data) {
+<!-- d3.csv("data/batch10/msg7200.csv", function(data) {
   var expensesByName = d3.nest()
   .key(function(d) { return d.round; })
   .key(function(d) {return d.round_center_bool; })
@@ -26,3 +43,7 @@ d3.csv("data/batch10/msg7200.csv", function(data) {
 if (d.values[0].key == 1) {return "客服的目的是:"}
      else if (d.values[0].key == 2) { return "客户的态度是:"} 
       else {return "请提取关键词:"}
+
+       .classed("row sideBar-body msg0", function(d) {return d.values[0].key==0})
+      .classed("row sideBar-body msg1", function(d) {return d.values[0].key==1})
+      .classed("row sideBar-body msg2", function(d) {return d.values[0].key==2}) -->
