@@ -1,5 +1,5 @@
 import pandas as pd
-raw = pd.read_csv("qa/static/labeler/data/raw.csv")
+raw = pd.read_csv("tagging2/raw.csv")
 import os
 
 raw = raw.fillna("...") #96180
@@ -34,10 +34,29 @@ for i in msgID:
 import sqlite3
 
 conn = sqlite3.connect('db.sqlite3')
+lRaw = raw.drop_duplicates(subset=['msg_id', 'round'], keep="last")
+lDF = pd.DataFrame()
+n=1
+for idx, row in lRaw.iterrows():
+	try:
+		sql = "insert into qa_label values ({},{},'NA',{}, {}".format(idx, row[1], row[0], row[2]) + ");"
+		c = conn.cursor()
+		c.execute(sql)
+		conn.commit()
+		n += 1
+	except:
+		lDF = lDF.append(row)
+
+conn.close()
+
+
+c = conn.cursor()
+c.execute("PRAGMA table_info(qa_conversation);")
+c.fetchall()
 tmpDF = pd.DataFrame()
 for idx, row in raw.iterrows():
 	try:
-		sql = "insert into qa_conversation values ({}, {}, \'{}\', \'{}\', {}".format(idx, row[1], row[2], row[3],row[0]) + ");"
+		sql = "insert into qa_conversation values ({}, {}, \'{}\', {},\'{}\', {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
@@ -47,7 +66,7 @@ for idx, row in raw.iterrows():
 errorDF = pd.DataFrame()	
 for idx, row in tmpDF.iterrows():
 	try:
-		sql = "insert into qa_conversation values ({}, {}, \"{}\", \"{}\", {}".format(idx, row[0], row[2], row[3],row[1]) + ");"
+		sql = "insert into qa_conversation values ({}, {}, \"{}\", {},\"{}\", {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()

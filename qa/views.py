@@ -380,11 +380,13 @@ class QuestionDetailView(HitCountDetailView):
     def get_context_data(self, **kwargs):
         conv = self.object.conversation_set.all().order_by('roundid')
         answers = self.object.answer_set.all().order_by('pub_date')
+        label = self.object.label_set.all().order_by('roundid')
         context = super(QuestionDetailView, self).get_context_data(**kwargs)
         context['last_comments'] = self.object.questioncomment_set.order_by(
             'pub_date')[:5]
         context['answers'] = list(answers.annotate(answercomment_count=Count('answercomment')))
         context['conv'] = list(conv)
+        context['label']=list(label)
         return context
 
     def get(self, request, **kwargs):
@@ -513,3 +515,4 @@ def profile(request, user_id):
     user = UserQAProfile.objects.get(user=user_ob)
     context = {'user': user}
     return render(request, 'qa/profile.html', context)
+

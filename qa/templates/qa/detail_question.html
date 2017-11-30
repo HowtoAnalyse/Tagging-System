@@ -46,8 +46,6 @@
                 <div class="message-text">
               {{ c.Conversation_txt }}
                 </div>
-              </div>
-            </div>
 {% elif c.speaker == "he" %}
     <div class="col-sm-12 message-main-sender">
               <div class="sender">
@@ -58,8 +56,6 @@
               {{ c.Conversation_txt }}
                 </div>
 
-              </div>
-            </div>
 {% else %}
     <div class="col-sm-12 message-main-sender">
               <div class="sender">
@@ -69,11 +65,10 @@
                 <div class="message-text">
               {{ c.Conversation_txt }}
                 </div>
-
-              </div>
-            </div>
 {% endif %}
-            
+        <span class="message-round pull-right">{{ c.roundid }}</span>
+        </div>
+        </div>
           </div>
 {% endfor %}
         </div>
@@ -126,44 +121,23 @@
 
           </div>
           <!-- Heading End -->
-
-          <!-- SearchBox -->
-          <div class="row searchBox">
-            <div class="col-sm-12 searchBox-inner">
-              <div class="form-group has-feedback">
-                <input id="searchText" type="text" class="form-control" name="searchText" placeholder="Search">
-              </div>
-            </div>
-          </div>
-
-          <!-- Search Box End -->
           <!-- sideBar -->
-          <div class="row sideBar">
-            {% csrf_token %}
-            {% for answer in answers %}
-                <div class="row sideBar-body">
-                  <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                    <div class="avatar-icon">
-  <form action="{% url 'qa_answer_vote' answer.id %}" method="POST">
-      {% csrf_token %}
-      <input type="hidden" name="next" value="{{ request.path }}">
-      <input type="hidden" name="upvote" value="on">
-      <button type="submit" class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Vote Up this answer"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-</form>
+<div class="row sideBar">
+{% for c in label %}
+  {% if c.center_bool == 0 %}
+    <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，提取关键词:<input class="form-control keywords" type="text"></div>
+  {% elif c.center_bool == 1 %}
+<div id="10" class="row sideBar-body msg1">请根据对话{{ c.roundid }}，判断客服的目的:<select class="keywords styled-select rounded"><option value="follow up" selected="selected">跟进</option><option value="sign up">注册</option><option value="sign up">其他</option></select></div>
+  {% else %}
+<div id="11" class="row sideBar-body msg2">请根据对话{{ c.roundid }}，判断客户的态度:<select class="keywords styled-select rounded"><option value="accept" selected="selected">接受</option><option value="reject">拒绝</option><option value="ignore">无视</option></select></div>
+  {% endif %}
 
-                    </div>
-                  </div>
-                  <div class="col-sm-9 col-xs-9 sideBar-main">
-                    <div class="row">
-                      <div class="col-sm-8 col-xs-8 sideBar-name">
-                        <label for="choice{{ forloop.counter }}">{{ answer.answer_text }}</label><br />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+{% endfor %}
+          
 
-            {% endfor %}
-          </div>
+          
+          <!-- Sidebar End -->
+        </div>
           <!-- Sidebar End -->
         </div>
         

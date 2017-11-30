@@ -1,321 +1,136 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-      <title>To add project name</title>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-      <link rel="stylesheet" type="text/css" href="../../static/labeler/style.css" />
-        <!-- Font Awesome File -->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-      <script type="text/javascript" src="../../static/labeler/script.js"></script>
-      <script type="text/javascript" src="../../static/labeler/d3.js"></script>
+{% extends "qa/base.html" %}
+{% load staticfiles %}
 
-    </head>
-    <body>
-<div class="container app">
-    <div class="row app-one">
-     <!-- Conversation Start -->
-      <div class="col-sm-8 conversation">
-        <!-- Heading -->
-        <div class="row heading">
-          <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
-            <div class="heading-avatar-icon">
-              <img src="../../static/labeler/teeth.png">
-            </div>
-          </div>
-          <div class="col-sm-8 col-xs-7 heading-name">
-            <a class="heading-name-meta">Sara
-            </a>
-            <span class="heading-online">Online</span>
-          </div>
-          <div class="col-sm-1 col-xs-1  heading-dot pull-right">
-            <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
-          </div>
-        </div>
-        <!-- Heading End -->
+{% block content %}
 
-        <!-- Message Box -->
-        <div class="row message" id="conversation">
+<div class="col-md-8">
 
-          <div class="row message-previous">
-            <div class="col-sm-12 previous">
-              <a onclick="previous(this)" id="sara" name="20">
-              Show Previous Message!
-              </a>
-            </div>
-          </div>
-          <div class="row message-body">
-            
-          </div>
-        </div>
-        <!-- Message Box End -->
-
-        <!-- Reply Box -->
-        <div class="row reply">
-          <div class="col-sm-1 col-xs-1 reply-emojis">
-            <i class="fa fa-smile-o fa-2x"></i>
-          </div>
-          <div class="col-sm-9 col-xs-9 reply-main">
-            <textarea class="form-control" rows="1" id="comment"></textarea>
-          </div>
-          <div class="col-sm-1 col-xs-1 reply-recording">
-            <i class="fa fa-microphone fa-2x" aria-hidden="true"></i>
-          </div>
-          <div class="col-sm-1 col-xs-1 reply-send">
-            <i class="fa fa-send fa-2x" aria-hidden="true"></i>
-          </div>
-        </div>
-        <!-- Reply Box End -->
-      </div>
-      <!-- Conversation End -->
-
-      <div class="col-sm-4 side">
-        <div class="side-one">
-          <!-- Heading -->
-          <div class="row heading">
-            <div class="col-sm-3 col-xs-3 heading-avatar">
-              <div class="heading-avatar-icon">
-                <img src="../../static/labeler/teeth.png">
-              </div>
-            </div>
-            <div class="col-sm-1 col-xs-1  heading-dot  pull-right">
-              <!-- <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i> -->
-
-            </div>
-            <div class="col-sm-2 col-xs-2 heading-compose  pull-right">
-              <i class="fa fa-comments fa-2x  pull-right" aria-hidden="true"></i>
-            </div>
-
-          </div>
-          <!-- Heading End -->
-
-          <!-- sideBar -->
-          <div class="row sideBar">
-
-          </div>
-          <!-- Sidebar End -->
-          <!-- SearchBox -->
-<!--           <div class="row searchBox">
-            <div class="col-sm-12 searchBox-inner">
-                     <a href='#' onclick='downloadCSV({ filename: "stock-data.csv" });'>Submit</a>
-                      <input style="position:absolute; top:50%; left:5%; width:40%;" type="submit" onclick="othername();" />
-
-            </div>
-            </div> -->
-                      <!-- Search Box End -->
-        <p id="demo"></p>
-
-        </div>
-
-        
-        <!-- Sidebar End -->
-      </div>
-
-
-      <!-- New Message Sidebar End -->
-
-     
+    <ul class="nav nav-tabs nav-justified">
+        <li role="presentation" {% if active_tab == 'latest' %}class="active"{% endif %}><a href="#latest" data-toggle="tab"><span class="glyphicon glyphicon-th-list"></span> Latest</a></li>
+        <li role="presentation" {% if active_tab == 'unans' %}class="active"{% endif %}><a href="#unans" data-toggle="tab"><span class="glyphicon glyphicon-question-sign"></span> Unanswered <span class="badge">{{ totalnoans }}</span></a></li>
+    </ul>
+    <br/>
+<div class="tab-content">
+<div class="tab-pane {% if active_tab == 'latest' %}active{% endif %}" id="latest">
+{% if questions %}
+  {% for question in questions %}
+    <div class="row">
+      <div class="col-sm-1 ans"><small><div class="ques">{{ question.num_answers }}</div>Answers</small></div>
+      <div class="col-sm-1 ans"><small><div class="ques">{{ question.hit_count.hits }}</div>Views</small></div>
+      <p>
+        {% if question.reward %}<span class="glyphicon glyphicon-fire" aria-hidden="true"></span>{% endif %}
+        <h3><a href="{% url 'qa_detail' question.id %}">{{ question.title }}</a></h3>
+        <br/>
+        {% for tag in question.tags.all %}
+            <a href="{% url 'qa_tag' tag.slug %}"><tag>{{ tag.slug }}</tag></a>
+        {% endfor %}
+        <small> {{ question.pub_date }}</small>
+      </p>
     </div>
-    <!-- App One End -->
+    <hr>
+  {% endfor %}
+
+<div class="pagination">
+  {% if is_paginated %}
+      <div class="pagination">
+          <span class="page-links">
+              {% if page_obj.has_previous %}
+                  <a href="{% url 'qa_index' %}?page={{ page_obj.previous_page_number }}">previous</a>
+              {% endif %}
+              <span class="page-current">
+                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+              </span>
+              {% if page_obj.has_next %}
+                  <a href="{% url 'qa_index' %}?page={{ page_obj.next_page_number }}">next</a>
+              {% endif %}
+          </span>
+      </div>
+  {% endif %}
+</div>
+
+{% else %}
+<div class="alert alert-warning" role="alert">No Questions are available!</div>
+{% endif %}
+</div>
+
+<div class="tab-pane {% if active_tab == 'unans' %}active{% endif %}" id="unans">
+{% if noans %}
+  {% for question in noans %}
+  <div class="row">
+  <div class="col-sm-1 ans"><small><div class="ques">{{ question.num_answers }}</div>Answers</small></div>
+  <div class="col-sm-1 ans"><small><div class="ques">{{ question.hit_count.hits }}</div>Views</small></div>
+  <p>
+    {% if question.num_answers %}<span class="glyphicon glyphicon-fire" aria-hidden="true"></span>{% endif %} <a class="ques" href="{% url 'qa_detail' question.id %}">{{ question.title }}</a>
+    <br/>
+    {% for tag in question.tags.all %}
+        <a href="{% url 'qa_tag' tag.slug %}"><tag>{{ tag.slug }}</tag></a>
+    {% endfor %}
+    <small> {{ question.pub_date }}</small>
+  </p>
+</div>
+<hr>
+  {% endfor %}
+
+{% else %}
+<div class="alert alert-warning" role="alert">No Questions are available!</div>
+{% endif %}
+<div class="pagination">
+    <span class="step-links">
+        {% if noans.has_previous %}
+            <a href="?noans_page={{ noans.previous_page_number }}&active_tab=unans">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ noans.number }} of {{ noans.paginator.num_pages }}.
+        </span>
+
+        {% if noans.has_next %}
+            <a href="?noans_page={{ noans.next_page_number }}&active_tab=unans">next</a>
+        {% endif %}
+    </span>
+</div>
+</div>
+
+  </div>
+</div>
+
+<div class="col-md-4">
+	<div class="panel panel-default">
+	    <div class="panel-body">
+	      {% if user.is_authenticated %}
+	      <a href="{% url 'qa_profile' user.id %}" data-toggle="modal">
+	      </a>
+	      <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+	      <a href="/qa/profile/{{ user.id }}">My Profile</a> | <!--to consider-->
+	      <a href="/qa/logout/">Logout</a>
+	  {% else %}
+	  <a class="btn btn-block btn-success" href="/qa/login"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Login | Sign Up</a><br/>
+	  {% endif %}
+	  </div>
+	  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <h4>Total Conversations: {{ totalcount }}</h4>
+    </div>
   </div>
 
-  <script type="text/javascript" charset="utf-8">   
-function ResSubmit() {
-  labels = [];
-  var usrInput = document.getElementsByClassName("keywords");
-  var combined = document.getElementById("demo");
-  // combined.innerHTML = usrInput
-  for(var i=0; i < usrInput.length; i++) { 
-    labels.push(usrInput[i].value);}
-
-  combined.innerHTML = labels;
-}
-
-function updateG(data, fileNumber) {
-  var parent = d3.select("body").selectAll(".message-body").selectAll("div").data(data)
-  var bod = parent.enter().append('div')
-            .attr("class", function(d) {
-                if (d.speaker == "i") {return "col-sm-12 message-main-receiver"}
-                else {return "col-sm-12 message-main-sender"}
-            });
-
-    var bodmain = bod.append("div")
-                    .attr("class", function(d) {
-                        if (d.speaker == "i") { return "receiver"}
-                            else {return "sender"}
-                    });
-    bodmain.append("span")
-                    .attr("class", "message-time pull-right")
-                    .text(function(d) {
-                        if (d.speaker == "i") {return "客服"}
-                            else {return "客户"}
-                    });
-    bodmain.append("div")
-                    .attr("class", "message-text")
-                    .attr("id", function(d) {
-                        return d.msg_id
-                    })
-                    .text(function(d) {
-                        return d.text;
-                    });
-
-  var byRound = d3.nest()
-  .key(function(d) { return d.round; })
-  .key(function(d) {return d.round_center_bool; })
-  .entries(data);
-
-  var answr = d3.select("body").selectAll(".sideBar").selectAll("div").data(byRound)
-  var answrbod = answr.enter().append("div")
-  .attr("class", function(d) {
-    if (d.values[0].key == 1) {return "row sideBar-body msg1"}
-     else if (d.values[0].key == 2) { return "row sideBar-body msg2"} 
-      else {return "row sideBar-body msg0"}
-    })
-  .text(function(d) {
-    if (d.values[0].key == 1) {return "客服的目的是:"}
-     else if (d.values[0].key == 2) { return "客户的态度是:"} 
-      else {return "请提取关键词:"}
-  });
-
-  var forms = d3.selectAll(".msg0").append("form")
-    .attr({
-      "id": "form",
-      "onsubmit":"return false;"
-    })
-  forms.append("input")
-    .attr({
-      "class":"form-control keywords",
-      "type":"text",
-    })
-
-  var centers = d3.selectAll(".msg1").append("select").attr("class","keywords")
-  centers.append("option").attr("value", "follow up").text("跟进")
-  centers.append("option").attr("value", "sign up").text("注册")
-
-  var center2 = d3.selectAll(".msg2").append("select").attr("class","keywords")
-  center2.append("option").attr("value", "accept").text("接受")
-  center2.append("option").attr("value", "reject").text("拒绝")
-  center2.append("option").attr("value", "ignore").text("无视")
-}
-
-function getData(f) {
-  fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
-  d3.csv(fileName, function(error, data) {
-    if (error) {
-      f++;
-      getData(f);
-    }
-      else {
-        updateG(data, f);
-      };
-  });
-}
-
-f = 0
-getData(f)
-
-d3.selectAll(".sideBar").append("input")
-  .attr({
-    // "style":"position:absolute; top:50%; left:5%; width:40%;",
-    "type":"submit",
-    // "onclick":"ResSubmit();"
-  })
-  .on("click", function(){
-    ResSubmit();
-  })
-d3.selectAll(".sideBar").append("input")
-.attr({
-  // "style":"position:absolute; top:50%; left:5%; width:40%;",
-  "type":"button",
-  "name":"getNext",
-  "value":"Next Message",
-})
-.on("click", function() {
-  d3.select("body").selectAll(".message-body").selectAll("div").remove();
-  d3.select("body").selectAll(".sideBar").selectAll("div").remove();
-  f++;
-  fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
-  d3.csv(fileName, function(error, data) {
-    updateG(data, f);
-    console.log(f);
-  })
-})
+  {% if noans.count %}
+  <div class="panel panel-warning">
+    <div class="panel-heading">
+      <h3 class="panel-title">Unanswered Questions</h3>
+    </div>
+    <div class="panel-body">
+    <ul>
+      {% for question in noans %}
+      <li><a href="{% url 'qa_detail' question.id %}">{{ question.title }}</a></li>
+      {% endfor %}
+    </ul>
+    </div>
+  </div>
+  {% endif %}
 
 
-    var stockData = [
-        {
-            Symbol: "AAPL",
-            Company: "Apple Inc.",
-            Price: "132.54"
-        },
-        {
-            Symbol: "INTC",
-            Company: "Intel Corporation",
-            Price: "33.45"
-        },
-        {
-            Symbol: "GOOG",
-            Company: "Google Inc",
-            Price: "554.52"
-        },
-    ];
+</div>
 
-    function convertArrayOfObjectsToCSV(args) {
-        var result, ctr, keys, columnDelimiter, lineDelimiter, data;
-
-        data = args.data || null;
-        if (data == null || !data.length) {
-            return null;
-        }
-
-        columnDelimiter = args.columnDelimiter || ',';
-        lineDelimiter = args.lineDelimiter || '\n';
-
-        keys = Object.keys(data[0]);
-
-        result = '';
-        result += keys.join(columnDelimiter);
-        result += lineDelimiter;
-
-        data.forEach(function(item) {
-            ctr = 0;
-            keys.forEach(function(key) {
-                if (ctr > 0) result += columnDelimiter;
-
-                result += item[key];
-                ctr++;
-            });
-            result += lineDelimiter;
-        });
-
-        return result;
-    }
-
-    window.downloadCSV = function(args) {
-        var data, filename, link;
-
-        var csv = convertArrayOfObjectsToCSV({
-            data: stockData
-        });
-        if (csv == null) return;
-
-        filename = args.filename || 'export.csv';
-
-        if (!csv.match(/^data:text\/csv/i)) {
-            csv = 'data:text/csv;charset=utf-8,' + csv;
-        }
-        data = encodeURI(csv);
-
-        link = document.createElement('a');
-        link.setAttribute('href', data);
-        link.setAttribute('download', filename);
-        link.click();
-    }
-
-  </script>
-
-</body>
-</html>
+{% endblock content %}

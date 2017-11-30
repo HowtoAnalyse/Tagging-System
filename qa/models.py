@@ -59,6 +59,7 @@ class Conversation(models.Model):
     question = models.ForeignKey(Question)
     roundid = models.IntegerField()
     speaker = models.CharField(max_length=200)
+    center_bool = models.IntegerField(default=0)
     Conversation_txt = models.CharField(max_length=200)
 
     def __str__(self):
@@ -67,6 +68,19 @@ class Conversation(models.Model):
     class Meta:
         ordering = ['roundid']
 
+
+class Label(models.Model):
+    question = models.ForeignKey(Question)
+    roundid = models.IntegerField()
+    center_bool = models.IntegerField(default=0)
+    label_text = models.CharField(max_length=200)
+    def __str__(self):
+        return self.label_text
+
+    class Meta:
+        unique_together = (('question', 'roundid'),)
+            
+        
 
 class Answer(models.Model):
     """Model class to contain every answer in the forum and to link it

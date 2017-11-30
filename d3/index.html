@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <title>To add project name</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <link rel="stylesheet" type="text/css" href="static/style.css" />
+        <!-- Font Awesome File -->
+      <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+      <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+      <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
+      <script type="text/javascript" src="static/script.js"></script>
+      <script type="text/javascript" src="static/d3.js"></script>
+    </head>
+    <body>
+<div class="container app">
+    <div class="row app-one">
+     <!-- Conversation Start -->
+      <div class="col-sm-8 conversation">
+        <!-- Heading -->
+        <div class="row heading">
+          <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
+            <div class="heading-avatar-icon">
+              <img src="static/teeth.png">
+            </div>
+          </div>
+          <div class="col-sm-8 col-xs-7 heading-name">
+            <a class="heading-name-meta">Sara</a>
+            <span class="heading-online">Online</span>
+          </div>
+          <div class="col-sm-1 col-xs-1  heading-dot pull-right">
+            <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
+          </div>
+        </div>
+        <!-- Heading End -->
+
+        <!-- Message Box -->
+        <div class="row message" id="conversation">
+
+          <div class="row message-previous">
+            <div class="col-sm-12 previous">
+              <a onclick="previous(this)" id="sara" name="20">
+              Show Previous Message!
+              </a>
+            </div>
+          </div>
+          <div class="row message-body">
+            
+          </div>
+        </div>
+        <!-- Message Box End -->
+
+        <!-- Reply Box -->
+        <div class="row reply">
+          <div class="col-sm-1 col-xs-1 reply-emojis">
+            <i class="fa fa-smile-o fa-2x"></i>
+          </div>
+          <div class="col-sm-9 col-xs-9 reply-main">
+            <textarea class="form-control" rows="1" id="comment"></textarea>
+          </div>
+          <div class="col-sm-1 col-xs-1 reply-recording">
+            <i class="fa fa-microphone fa-2x" aria-hidden="true"></i>
+          </div>
+          <div class="col-sm-1 col-xs-1 reply-send">
+            <i class="fa fa-send fa-2x" aria-hidden="true"></i>
+          </div>
+        </div>
+        <!-- Reply Box End -->
+      </div>
+      <!-- Conversation End -->
+
+      <div class="col-sm-4 side">
+        <div class="side-one">
+          <!-- Heading -->
+          <div class="row heading">
+            <div class="col-sm-3 col-xs-3 heading-avatar">
+              <div class="heading-avatar-icon">
+                <img src="static/teeth.png">
+              </div>
+            </div>
+            <div class="col-sm-4 col-xs-4  heading-submit">
+              <!-- <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i> -->
+
+            </div>
+            <div class="col-sm-4 col-xs-4 heading-compose">
+            </div>
+
+          </div>
+          <!-- Heading End -->
+
+          <!-- sideBar -->
+          <div class="row sideBar">
+
+          </div>
+          <!-- Sidebar End -->
+        </div>
+
+        
+        <!-- Sidebar End -->
+      </div>
+
+
+      <!-- New Message Sidebar End -->
+
+     
+    </div>
+    <!-- App One End -->
+  </div>
+
+  <script type="text/javascript" charset="utf-8">  
+function exportToCsv(filename, rows) {
+        var processRow = function (row) {
+            var finalVal = '';
+            for (var j = 0; j < row.length; j++) {
+                var innerValue = row[j] === null ? '' : row[j].toString();
+                if (row[j] instanceof Date) {
+                    innerValue = row[j].toLocaleString();
+                };
+                var result = innerValue.replace(/"/g, '""');
+                if (result.search(/("|,|\n)/g) >= 0)
+                    result = '"' + result + '"';
+                if (j > 0)
+                    finalVal += ',';
+                finalVal += result;
+            }
+            return finalVal + '\n';
+        };
+
+        var csvFile = '';
+        for (var i = 0; i < rows.length; i++) {
+            csvFile += processRow(rows[i]);
+        }
+
+        var blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+        if (navigator.msSaveBlob) { // IE 10+
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            var link = document.createElement("a");
+            if (link.download !== undefined) { // feature detection
+                // Browsers that support HTML5 download attribute
+                var url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    }
+     
+function ResSubmit() {
+  labels = [["msgID", "roundid", "label"]];
+  var usrInput = document.getElementsByClassName("keywords");
+  for(var i=0; i < usrInput.length; i++) { 
+    roundID = usrInput[i].parentNode.id;
+    labels.push([f, roundID,usrInput[i].value]);}
+  console.log(labels);
+  fileName = "label"+f+".csv"
+  exportToCsv(fileName, labels)
+}
+
+
+function updateG(data, fileNumber) {
+  var parent = d3.select("body").selectAll(".message-body").selectAll("div").data(data)
+  var bod = parent.enter().append('div')
+            .attr("class", function(d) {
+                if (d.speaker == "i") {return "col-sm-12 message-main-receiver"}
+                else {return "col-sm-12 message-main-sender"}
+            });
+
+    var bodmain = bod.append("div")
+                    .attr("class", function(d) {
+                        if (d.speaker == "i") { return "receiver"}
+                            else {return "sender"}
+                    });
+    bodmain.append("span")
+                    .attr("class", "message-time pull-right")
+                    .text(function(d) {
+                        if (d.speaker == "i") {return "客服"}
+                            else {return "客户"}
+                    });
+    bodmain.append("div")
+                    .attr("class", "message-text")
+                    .attr("id", function(d) {
+                        return d.msg_id
+                    })
+                    .text(function(d) {
+                        return d.text;
+                    });
+    bodmain.append("span")
+                    .attr("class", "message-round pull-right")
+                    .text(function(d) {
+                        return d.round;
+                    });
+
+  var byRound = d3.nest()
+  .key(function(d) { return d.round; })
+  .key(function(d) {return d.round_center_bool; })
+  .entries(data);
+
+  var answr = d3.select("body").selectAll(".sideBar").selectAll("div").data(byRound)
+  var answrbod = answr.enter().append("div")
+  .attr("id", function(d) {return d.key;})
+  .attr("class", function(d) {
+    if (d.values[0].key == 1) {return "row sideBar-body msg1"}
+     else if (d.values[0].key == 2) { return "row sideBar-body msg2"} 
+      else {return "row sideBar-body msg0"}
+    })
+  .text(function(d) {
+    if (d.values[0].key == 1) {return "请根据对话"+d.key+"，"+"判断客服的目的:"}
+     else if (d.values[0].key == 2) { return "请根据对话"+d.key+"，"+"判断客户的态度:"} 
+      else {return "请根据对话"+d.key+"，"+"提取关键词:"}
+  });
+
+  var forms = d3.selectAll(".msg0")
+  forms.append("input")
+    .attr({
+      "class":"form-control keywords",
+      "type":"text",
+    })
+
+  var centers = d3.selectAll(".msg1").append("select").attr("class","keywords styled-select rounded")
+  centers.append("option").attr("value", "follow up").text("跟进")
+  centers.append("option").attr("value", "sign up").text("注册")
+  centers.append("option").attr("value", "sign up").text("其他")
+
+  var center2 = d3.selectAll(".msg2").append("select").attr("class","keywords styled-select rounded")
+  center2.append("option").attr("value", "accept").text("接受")
+  center2.append("option").attr("value", "reject").text("拒绝")
+  center2.append("option").attr("value", "ignore").text("无视")
+}
+
+// function getData(f) {
+//   fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
+//   d3.csv(fileName, function(error, data) {
+//     if (error) {
+//       f++;
+//       getData(f);
+//     }
+//       else {
+//         updateG(data, f);
+//       };
+//   });
+// }
+
+function getData(f) {
+  resName = "result/label"+f+".csv"
+  d3.csv(resName, function(error, data) {
+    if (error) {
+      f++;
+      getData(f);
+    }
+      else {
+        f++;
+        fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
+        d3.csv(fileName, function(data){
+          updateG(data, f);
+        })
+      };
+  });
+}
+
+f = 0
+getData(f)
+
+d3.selectAll(".heading-submit").append("input")
+  .attr({
+    "style":"position:absolute; top:50%;",
+    "type":"submit",
+    "value": "Submit",
+    // "onclick":"ResSubmit();"
+  })
+  .on("click", function(){
+    ResSubmit();
+    // downloadCSV({ filename: "stock-data.csv" });
+  })
+
+d3.selectAll(".heading-compose").append("input")
+.attr({
+  "style":"position:absolute; top:50%;",
+  "type":"button",
+  "name":"getNext",
+  "value":"Next Message",
+})
+.on("click", function() {
+  d3.select("body").selectAll(".message-body").selectAll("div").remove();
+  d3.select("body").selectAll(".sideBar").selectAll("div").remove();
+  f++;
+  fileName = "data/batch"+(Math.floor(f/800)+1)+"/msg"+f+".csv"
+  d3.csv(fileName, function(error, data) {
+    updateG(data, f);
+    console.log(f);
+  })
+})
+  </script>
+
+</body>
+</html>
