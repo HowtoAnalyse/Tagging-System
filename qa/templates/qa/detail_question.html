@@ -123,6 +123,9 @@
           <!-- Heading End -->
           <!-- sideBar -->
 <div class="row sideBar">
+  <form method="post" action="">
+      {% csrf_token %}
+      {{ form.as_p }}
 {% for c in label %}
   {% if c.center_bool == 0 %}
     <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，提取关键词:<input class="form-control keywords" type="text"></div>
@@ -133,7 +136,10 @@
   {% endif %}
 
 {% endfor %}
-          
+      <input class="btn pull-right btn-success" type="submit" value="Submit Answer" />
+
+      </form>
+      
 
           
           <!-- Sidebar End -->
