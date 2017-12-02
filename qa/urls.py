@@ -23,9 +23,14 @@ urlpatterns = [
     url(r'^edit-question/(?P<question_id>\d+)/$',
         views.UpdateQuestionView.as_view(),
         name='qa_update_question'),
-
-    url(r'^answer/(?P<question_id>\d+)/$',
+    url(r'^question/(?P<pk>\d+)/$',
         views.CreateAnswerView.as_view(), name='qa_create_answer'),
+
+    url(r'^question/(?P<pk>\d+)/(?P<slug>[-_\w]+)/$',
+        views.CreateAnswerView.as_view(), name='qa_create_answer'),
+
+    # url(r'^answer/(?P<question_id>\d+)/$',
+    #     views.CreateAnswerView.as_view(), name='qa_create_answer'),
 
     url(r'^answer/edit/(?P<answer_id>\d+)/$',
         views.UpdateAnswerView.as_view(), name='qa_update_answer'),

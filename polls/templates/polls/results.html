@@ -1,0 +1,9 @@
+<h1>{{ question.question_text }}</h1>
+
+<ul>
+{% for choice in question.label_set.all %}
+    <li>{{ choice.center_bool }} -- {{ choice.roundid }} vote{{ choice.label_text }}</li>
+{% endfor %}
+</ul>
+
+<a href="{% url 'polls:detail' question.id %}">Vote again?</a>

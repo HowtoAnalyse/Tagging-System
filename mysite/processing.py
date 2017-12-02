@@ -1,5 +1,5 @@
 import pandas as pd
-raw = pd.read_csv("tagging2/raw.csv")
+raw = pd.read_csv("mysite/raw.csv")
 import os
 
 raw = raw.fillna("...") #96180
@@ -39,7 +39,7 @@ lDF = pd.DataFrame()
 n=1
 for idx, row in lRaw.iterrows():
 	try:
-		sql = "insert into qa_label values ({},{},'NA',{}, {}".format(idx, row[1], row[0], row[2]) + ");"
+		sql = "insert into polls_label values ({},{},{}, 'NA',{}".format(idx, row[1], row[2], row[0]) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
@@ -56,7 +56,7 @@ c.fetchall()
 tmpDF = pd.DataFrame()
 for idx, row in raw.iterrows():
 	try:
-		sql = "insert into qa_conversation values ({}, {}, \'{}\', {},\'{}\', {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
+		sql = "insert into polls_conversation values ({}, {}, \'{}\', {},\'{}\', {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
@@ -66,7 +66,7 @@ for idx, row in raw.iterrows():
 errorDF = pd.DataFrame()	
 for idx, row in tmpDF.iterrows():
 	try:
-		sql = "insert into qa_conversation values ({}, {}, \"{}\", {},\"{}\", {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
+		sql = "insert into polls_conversation values ({}, {}, \"{}\", {},\"{}\", {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
@@ -89,7 +89,7 @@ qDF = pd.DataFrame()
 n=1
 for idx, row in qRaw.iterrows():
 	try:
-		sql = "insert into qa_question values ({}, 'title{}','description{}', datetime('now'), 1, 0, 0, 0, 0, 'slug{}', {}".format(row[0], row[0], row[0], row[0], n) + ");"
+		sql = "insert into polls_question values ({}, 'description{}', datetime('now'), 0".format(row[0], row[0]) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
