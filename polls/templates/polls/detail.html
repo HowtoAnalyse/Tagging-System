@@ -27,14 +27,6 @@
 
         <!-- Message Box -->
         <div class="row message" id="conversation">
-
-          <div class="row message-previous">
-            <div class="col-sm-12 previous">
-              <a onclick="previous(this)" id="sara" name="20">
-              Show Previous Message!
-              </a>
-            </div>
-          </div>
 {% for c in conv %}
           <div class="row message-body">
           {% if c.speaker == "i" %}
@@ -123,24 +115,15 @@
           <!-- Heading End -->
           <!-- sideBar -->
 <div class="row sideBar">
-  {% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 {% for c in label %}
   {% if c.center_bool == 0 %}
-  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}" onsubmit="submitBoth()">
+  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
   {% csrf_token %}
     <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，提取关键词:<input class="form-control keywords" type="text" name="label_text" value="{{ c.label_text }}"></div>
-    <!-- <input class="btn pull-right btn-success" type="submit" value="Submit Answer" /> -->
 
-  </form>
   {% elif c.center_bool == 1 %}
-  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}" onsubmit="submitBoth()">
+  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
   {% csrf_token %}
 <div id="10" class="row sideBar-body msg1">请根据对话{{ c.roundid }}，判断客服的目的:{{ c.label_text }} <br />
 	 <input type="radio" name="label_text" id="1" value="FollowUp" />
@@ -150,11 +133,9 @@
     <input type="radio" name="label_text" id="3" value="Others" />
     <label for="3">其他</label><br />
 </div>
-<!-- <input class="btn pull-right btn-success" type="submit" value="Submit Answer" /> -->
 
-      </form>
   {% else %}
-  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}" onsubmit="submitBoth()">
+  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
   {% csrf_token %}
 <div id="11" class="row sideBar-body msg2">请根据对话{{ c.roundid }}，判断客户的态度:{{ c.label_text }} <br />
 	 <input type="radio" name="label_text" id="1" value="accepted" />
@@ -165,13 +146,13 @@
     <label for="3">无视</label><br />
 
 </div>
-<!-- <input class="btn pull-right btn-success" type="submit" value="Submit Answer" /> -->
+  {% endif %}
+<input class="btn pull-right btn-success" type="submit" value="Submit" />
 
       </form>
-  {% endif %}
-
 {% endfor %}
-<input class="btn pull-right btn-success" type="button" value="Click Me!" onclick="submitBoth()" />
+
+<!-- <input class="btn pull-right btn-success" type="button" value="Submit" onclick="submitBoth()" /> -->
     
           
           <!-- Sidebar End -->
@@ -180,7 +161,7 @@
             <div class="col-sm-12 searchBox-inner">
               <div class="form-group has-feedback">
                 <a href="{% url 'polls:index' %}" class="previous">&laquo; Back to Profile Page</a>
-<a href="{% url 'polls:detail' nextpk %}" class="next">Next Question &raquo;</a>
+<a href="{% url 'polls:detail' nextpk %}" class="next pull-right">Next Question &raquo;</a>
 
               </div>
             </div>

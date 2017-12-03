@@ -22,11 +22,6 @@
 </div>
 
 <div class="container">
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
-  {% endfor %}
-{% endif %}
 
 <div class="col-md-8">
 
@@ -37,40 +32,17 @@
     <br/>
 <div class="tab-content">
 <div class="tab-pane {% if active_tab == 'latest' %}active{% endif %}" id="latest">
-<a href="{% url 'polls:downl' %}"><orange>Download</orange> </a>
+<a href="{% url 'polls:downl' %}">Download Labeled Data</a>
 </div>
 
 <div class="tab-pane {% if active_tab == 'unans' %}active{% endif %}" id="unans">
 {% if noans %}
-  {% for question in noans %}
-  <div class="row">
-  <p>
-    {% if question.num_answers %}<span class="glyphicon glyphicon-fire" aria-hidden="true"></span>{% endif %}<a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a>
-    <br/>
-    <small> {{ question.pub_date }}</small>
-  </p>
-</div>
-<hr>
-  {% endfor %}
+
+<span class="glyphicon glyphicon-fire" aria-hidden="true"></span><a href="{% url 'polls:detail' noans.0.id %}"> Start Labeling</a>
 
 {% else %}
 <div class="alert alert-warning" role="alert">No Questions are available!</div>
 {% endif %}
-<div class="pagination">
-    <span class="step-links">
-        {% if noans.has_previous %}
-            <a href="?noans_page={{ noans.previous_page_number }}&active_tab=unans">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ noans.number }} of {{ noans.paginator.num_pages }}.
-        </span>
-
-        {% if noans.has_next %}
-            <a href="?noans_page={{ noans.next_page_number }}&active_tab=unans">next</a>
-        {% endif %}
-    </span>
-</div>
 </div>
 
   </div>
@@ -133,18 +105,3 @@ $(function () {
 {%block extra_js %}{% endblock extra_js %}
     </body>
 </html>
-
-<!-- <ul class="nav nav-tabs nav-justified">
-        <li role="presentation" {% if active_tab == 'latest' %}class="active"{% endif %}><a href="#latest" data-toggle="tab"><span class="glyphicon glyphicon-th-list"></span> Latest</a></li>
-        <li role="presentation" {% if active_tab == 'unans' %}class="active"{% endif %}><a href="#unans" data-toggle="tab"><span class="glyphicon glyphicon-question-sign"></span> Unanswered <span class="badge">{{ totalnoans }}</span></a></li>
-    </ul>
-
-{% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No polls are available.</p>
-{% endif %} -->
