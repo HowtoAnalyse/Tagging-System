@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 from .forms import LabelForm
@@ -25,7 +27,7 @@ from .models import Choice, Question, Conversation, Label
 #         return Question.objects.filter(
 #             labeled=False
 #         )
-class IndexView(generic.ListView):
+class IndexView(LoginRequiredMixin,generic.ListView):
     """CBV to render the index view
     """
     model = Question
@@ -69,8 +71,7 @@ class IndexView(generic.ListView):
             labeled=False
         )
 
-
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin,generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
     context_object_name = 'question'
@@ -99,11 +100,12 @@ class DetailView(generic.DetailView):
     #     return Question.objects.filter(pub_date__lte=timezone.now())
 
 
-
-class ResultsView(generic.DetailView):
+class ResultsView(LoginRequiredMixin,generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
+
+@login_required
 def vote(request, question_id):
     label = get_object_or_404(Label, pk=question_id)
     form = LabelForm(request.POST)
@@ -118,3 +120,26 @@ def vote(request, question_id):
         return HttpResponseRedirect(reverse('polls:detail', args=(label.question.id,)))
     
     return HttpResponseRedirect(reverse('polls:detail', args=(label.question.id,)))
+
+
+import csv
+import datetime as dt
+from django.db import connection
+
+
+def downl(request):
+    with connection.cursor() as cursor:
+        cursor.execute("select c.*, l.label_text from polls_conversation c inner join polls_label l on c.question_id=l.question_id and c.roundid=l.roundid where l.label_text != 'NA';")
+        row = cursor.fetchall()
+
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    fName = "labeled_"+str(dt.date.today())+".csv"
+    response['Content-Disposition'] = 'attachment; filename='+fName
+
+    writer = csv.writer(response)
+    writer.writerow(['QuestionID', 'Speaker', 'Content', 'Label'])
+    for r in row:
+        writer.writerow([r[5], r[2], r[4], r[6]])
+
+    return response
