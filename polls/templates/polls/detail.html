@@ -29,7 +29,7 @@
         <div class="row message" id="conversation">
 {% for c in conv %}
           <div class="row message-body">
-          {% if c.speaker == "i" %}
+          {% if c.speaker == "客服" %}
     <div class="col-sm-12 message-main-receiver">
               <div class="receiver">
               <span class="message-time pull-right">
@@ -38,7 +38,7 @@
                 <div class="message-text">
               {{ c.Conversation_txt }}
                 </div>
-{% elif c.speaker == "he" %}
+{% elif c.speaker == "客户" %}
     <div class="col-sm-12 message-main-sender">
               <div class="sender">
                 <span class="message-time pull-right">
@@ -86,7 +86,7 @@
       <!-- Conversation End -->
 
       <div class="col-sm-4 side">
-        <div class="side-one">
+        <!-- <div class="side-one"> -->
           <!-- Heading -->
           <div class="row heading">
             <div class="col-sm-3 col-xs-3 heading-avatar">
@@ -115,21 +115,22 @@
           <!-- Heading End -->
           <!-- sideBar --> 
 <div class="row sideBar">
-<form method="post" action="{% url 'polls:vote' conv.1.question.id %}" id="subm">
+<form method="post" action="{% url 'polls:vote' conv.1.question.id %}" name="subm" onsubmit="return validateInput()">
 {% csrf_token %}
   {% for c in label %}
     {% if c.center_bool == 0 %}
-      <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，分别为客服和客户提取1到5个关键词，并用逗号隔开:<input class="form-control keywords" type="text" name="{{ c.id }}" value="{{ c.label_text }}"></div>
-    {% elif c.center_bool == 1 %}
-      <div id="10" class="row sideBar-body msg1">请根据对话{{ c.roundid }}，判断客服的目的:{{ c.label_text }} <br />
+      <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，为{{ c.speaker }}提取1到5个关键词，并用逗号隔开:<input class="form-control keywords" type="text" name="{{ c.id }}" value="{{ c.label_text }}" id="input{{ c.id }}"></div>
+    {% else %}
+      {% if c.speaker == '客服' %}
+        <div id="10" class="row sideBar-body msg1">请根据对话{{ c.roundid }}，判断客服的目的:{{ c.label_text }} <br />
          <input type="radio" name="{{ c.id }}" id="1" value="FollowUp" />
           <label for="1">跟进</label><br />
           <input type="radio" name="{{ c.id }}" id="2" value="SignUp" />
           <label for="2">注册</label><br />
           <input type="radio" name="{{ c.id }}" id="3" value="Others" />
           <label for="3">其他</label><br />
-      </div>
-    {% else %}
+        </div>
+      {% else %}
       <div id="11" class="row sideBar-body msg2">请根据对话{{ c.roundid }}，判断客户的态度:{{ c.label_text }} <br />
          <input type="radio" name="{{ c.id }}" id="1" value="accepted" />
           <label for="1">接受</label><br />
@@ -138,49 +139,11 @@
           <input type="radio" name="{{ c.id }}" id="3" value="ignored" />
           <label for="3">无视</label><br />
       </div>
+      {% endif %}
     {% endif %}
   {% endfor %}
   <input class="btn pull-right btn-success" type="submit"  value="submit" />
 </form>
-
-<!-- {% for c in label %}
-  {% if c.center_bool == 0 %}
-  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
-  {% csrf_token %}
-    <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，提取1到5个关键词，并用逗号隔开:<input class="form-control keywords" type="text" name="label_text" value="{{ c.label_text }}"></div>
-
-  {% elif c.center_bool == 1 %}
-  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
-  {% csrf_token %}
-<div id="10" class="row sideBar-body msg1">请根据对话{{ c.roundid }}，判断客服的目的:{{ c.label_text }} <br />
-	 <input type="radio" name="label_text" id="1" value="FollowUp" />
-    <label for="1">跟进</label><br />
-    <input type="radio" name="label_text" id="2" value="SignUp" />
-    <label for="2">注册</label><br />
-    <input type="radio" name="label_text" id="3" value="Others" />
-    <label for="3">其他</label><br />
-</div>
-
-  {% else %}
-  <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
-  {% csrf_token %}
-<div id="11" class="row sideBar-body msg2">请根据对话{{ c.roundid }}，判断客户的态度:{{ c.label_text }} <br />
-	 <input type="radio" name="label_text" id="1" value="accepted" />
-    <label for="1">接受</label><br />
-    <input type="radio" name="label_text" id="2" value="rejected" />
-    <label for="2">拒绝</label><br />
-    <input type="radio" name="label_text" id="3" value="ignored" />
-    <label for="3">无视</label><br />
-</div>
-  {% endif %}
-
-      </form>
-{% endfor %} -->
-<!-- <input class="btn pull-right btn-success" type="button" value="Submit" onclick="submitForms()" /> -->
-
-<!-- <input class="btn pull-right btn-success" type="button" value="Submit" onclick="submitBoth()" /> -->
-    
-          
           <!-- Sidebar End -->
         </div>
         <div class="row searchBox">
@@ -204,19 +167,32 @@
           <!-- Search Box End -->
 
       <!-- New Message Sidebar End -->
-    </div>
+    <!-- </div> -->
     <!-- App One End -->
   </div>
 <script>
     {% if message %}
       alert('{{ message }}');
     {% endif %}
-</script>
-
-<script>
 function allLabeled() {
     alert("All questions have been labeled. Click 'OK' to go back to Home page");
     window.location.href = {% url 'polls:index' %};
+}
+</script>
+<script type="text/javascript">
+function validateInput()
+{ 
+  {% for c in label %}
+    {% if c.center_bool == 0 %}
+      var x = document.forms["subm"]["input{{ c.id }}"].value;
+      var xlen=x.split(/[，,]+/)
+      if (xlen<1 || xlen>5) {
+        alert("对话"+{{ c.id }}+"的输入不正确，请提取1到5个关键词，并用逗号隔开")
+      }
+    {% endif %}
+  {% endfor %}
+      // return $(':input[name=zipcode]').split(',') > -1
+      //true means the zip code is in the list, false it is not
 }
 </script>
 {% endblock %}

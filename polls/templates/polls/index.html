@@ -7,67 +7,42 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     </head>
-
     <body>
-
-
-
 <div class="container">
 <div class="page-header">
   <h1><a href="{% url 'polls:index' %}"><orange>Project Name</orange> </a><small>Text data labeling</small></h1>
 </div>
 <div class="col-md-8">
-
-    <ul class="nav nav-tabs nav-justified">
-        <li role="presentation" {% if active_tab == 'latest' %}class="active"{% endif %}><a href="#latest" data-toggle="tab"><span class="glyphicon glyphicon-th-list"></span> Export</a></li>
-        <li role="presentation" {% if active_tab == 'unans' %}class="active"{% endif %}><a href="#unans" data-toggle="tab"><span class="glyphicon glyphicon-question-sign"></span> Unlabelled <span class="badge">{{ totalnoans }}</span></a></li>
-    </ul>
-    <br/>
-<div class="tab-content">
-<div class="tab-pane {% if active_tab == 'latest' %}active{% endif %}" id="latest">
-<a href="{% url 'polls:downl' %}">Download Labelled Data</a>
-</div>
-
-<div class="tab-pane {% if active_tab == 'unans' %}active{% endif %}" id="unans">
-{% if noans %}
-
-<span class="glyphicon glyphicon-fire" aria-hidden="true"></span><a href="{% url 'polls:detail' noans.0.id %}"> Start Labelling</a>
-
-{% else %}
-<div class="alert alert-warning" role="alert">All questions have been labelled!</div>
-{% endif %}
-</div>
-
-  </div>
+<h1>Manual here</h1>
 </div>
 
 <div class="col-md-4">
-	<div class="panel panel-default">
-	    <div class="panel-body">
-	  </div>
-	  </div>
-
   <div class="panel panel-default">
     <div class="panel-body">
-      <h4>Total Conversations: {{ totalcount }}</h4>
+      <h4>Total dialogues: {{ totalcount }}</h4>
+      <h4>Unlabelled : {{ totalnoans }}</span></h4>
+      <h4>Labelled: <a href="{% url 'polls:downl' %}" style="text-decoration: none;">Click here to download</a></h4>
     </div>
   </div>
 
-  {% if noans.count %}
   <div class="panel panel-warning">
     <div class="panel-heading">
-      <h3 class="panel-title">Unlabelled Questions</h3>
+      <h3 class="panel-title">Unlabelled Dialogues</h3>
     </div>
     <div class="panel-body">
-    <ul>
-      {% for question in noans|slice:":10" %}
-      <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+    {% if noans.count %}
+    {% regroup noans|dictsort:"groupid" by groupid as country_list %}
+      <ul>
+      {% for groupid, qs in country_list %}
+          <li>Group {{ groupid }} -- <a href="{% url 'polls:detail' qs.0.id %}"> Start Labelling</a>
+          </li>
       {% endfor %}
-      <li><a href="">...</a></li>
-    </ul>
+      </ul>
+    {% else %}
+    <h4>All dialogues have been labelled!</h4>
+    {% endif %}
     </div>
   </div>
-  {% endif %}
 
 
 </div>
