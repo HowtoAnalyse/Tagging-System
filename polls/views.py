@@ -9,10 +9,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-
-from .forms import LabelForm
-
-from .models import Choice, Question, Conversation, Label
+from .models import Question, Conversation, Label
 
 
 # class IndexView(generic.ListView):
@@ -43,22 +40,12 @@ class IndexView(LoginRequiredMixin,generic.ListView):
             labeled=False
             )
         context['totalcount'] = Question.objects.count()
-        paginator = Paginator(noans, 10)
-        page = self.request.GET.get('noans_page')
         context['active_tab'] = self.request.GET.get('active_tab', 'latest')
         tabs = ['latest', 'unans', 'reward']
         context['active_tab'] = 'latest' if context['active_tab'] not in\
             tabs else context['active_tab']
-        try:
-            noans = paginator.page(page)
 
-        except PageNotAnInteger:
-            noans = paginator.page(1)
-
-        except EmptyPage:  # pragma: no cover
-            noans = paginator.page(paginator.num_pages)
-
-        context['totalnoans'] = paginator.count
+        context['totalnoans'] = noans.count()
         context['noans'] = noans
         return context
 
@@ -80,15 +67,19 @@ class DetailView(LoginRequiredMixin,generic.DetailView):
         label = self.object.label_set.all().order_by('roundid')
         context = super(DetailView, self).get_context_data(**kwargs)
         context['conv'] = list(conv)
-        context['label']=list(label)
+        labels = list(label)
+        context['label']=labels
+        if len([l for l in labels if l.label_text=='NA'])==0:
+            context['message']='This dialogue has been labelled successfully.'
         noans = Question.objects.filter(
             labeled=False
             )
-        nextpk = [o for o in noans if o.id != self.object.id][0].id
-        context['message'] = nextpk
-        context['nextpk']=nextpk
+        try:
+            nextpk = [o for o in noans if o.id != self.object.id][0].id
+            context['nextpk']=nextpk
+        except:
+            context['nextpk']=0
         return context
-
     def get_object(self):
         question = super(DetailView, self).get_object()
         return question
@@ -107,19 +98,32 @@ class ResultsView(LoginRequiredMixin,generic.DetailView):
 
 @login_required
 def vote(request, question_id):
-    label = get_object_or_404(Label, pk=question_id)
-    form = LabelForm(request.POST)
-    if form.is_valid():
-        keywords = form.cleaned_data['label_text']
-        label.label_text = keywords
-        label.save()
-        labels = label.question.label_set.all()
-        Q = label.question
-        Q.labeled=len([l for l in labels if l.label_text=='NA'])==0
-        Q.save()
-        return HttpResponseRedirect(reverse('polls:detail', args=(label.question.id,)))
+    question = get_object_or_404(Question, pk=question_id)
+    if request.method=='POST':
+        ks = [k for k in list(request.POST.keys()) if k.isdigit()]
+        for k in ks:
+            label = Label.objects.get(pk=k)
+        # for roundid, value in request.POST.items():
+            # label = get_object_or_404(Label, pk=roundid)
+            # label, created_l = Label.objects.get_or_create(question=question, roundid=roundid)
+            label.label_text=request.POST[k]
+            label.save()
+        labels=question.label_set.all()
+        question.labeled = len([l for l in labels if l.label_text=='NA'])==0
+        question.save()
+    #     values = [value for roundid, value in request.POST.iteritems()]
+    # form = LabelForm(request.POST)
+    # if form.is_valid():
+    #     keywords = form.cleaned_data['label_text']
+    #     label.label_text = keywords
+    #     label.save()
+    #     labels = label.question.label_set.all()
+    #     Q = label.question
+    #     Q.labeled=len([l for l in labels if l.label_text=='NA'])==0
+    #     Q.save()
+        return HttpResponseRedirect(reverse('polls:detail', args=(question_id,)))
     
-    return HttpResponseRedirect(reverse('polls:detail', args=(label.question.id,)))
+    return HttpResponseRedirect(reverse('polls:detail', args=(question_id,)))
 
 
 import csv

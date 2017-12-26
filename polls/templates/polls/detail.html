@@ -33,7 +33,7 @@
     <div class="col-sm-12 message-main-receiver">
               <div class="receiver">
               <span class="message-time pull-right">
-                  Merchant
+                  客服
                 </span>
                 <div class="message-text">
               {{ c.Conversation_txt }}
@@ -42,7 +42,7 @@
     <div class="col-sm-12 message-main-sender">
               <div class="sender">
                 <span class="message-time pull-right">
-                  Customer
+                  客户 
                 </span>
                 <div class="message-text">
               {{ c.Conversation_txt }}
@@ -52,7 +52,7 @@
     <div class="col-sm-12 message-main-sender">
               <div class="sender">
                 <span class="message-time pull-right">
-                  Customer
+                  客户
                 </span>
                 <div class="message-text">
               {{ c.Conversation_txt }}
@@ -113,14 +113,41 @@
 
           </div>
           <!-- Heading End -->
-          <!-- sideBar -->
+          <!-- sideBar --> 
 <div class="row sideBar">
+<form method="post" action="{% url 'polls:vote' conv.1.question.id %}" id="subm">
+{% csrf_token %}
+  {% for c in label %}
+    {% if c.center_bool == 0 %}
+      <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，分别为客服和客户提取1到5个关键词，并用逗号隔开:<input class="form-control keywords" type="text" name="{{ c.id }}" value="{{ c.label_text }}"></div>
+    {% elif c.center_bool == 1 %}
+      <div id="10" class="row sideBar-body msg1">请根据对话{{ c.roundid }}，判断客服的目的:{{ c.label_text }} <br />
+         <input type="radio" name="{{ c.id }}" id="1" value="FollowUp" />
+          <label for="1">跟进</label><br />
+          <input type="radio" name="{{ c.id }}" id="2" value="SignUp" />
+          <label for="2">注册</label><br />
+          <input type="radio" name="{{ c.id }}" id="3" value="Others" />
+          <label for="3">其他</label><br />
+      </div>
+    {% else %}
+      <div id="11" class="row sideBar-body msg2">请根据对话{{ c.roundid }}，判断客户的态度:{{ c.label_text }} <br />
+         <input type="radio" name="{{ c.id }}" id="1" value="accepted" />
+          <label for="1">接受</label><br />
+          <input type="radio" name="{{ c.id }}" id="2" value="rejected" />
+          <label for="2">拒绝</label><br />
+          <input type="radio" name="{{ c.id }}" id="3" value="ignored" />
+          <label for="3">无视</label><br />
+      </div>
+    {% endif %}
+  {% endfor %}
+  <input class="btn pull-right btn-success" type="submit"  value="submit" />
+</form>
 
-{% for c in label %}
+<!-- {% for c in label %}
   {% if c.center_bool == 0 %}
   <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
   {% csrf_token %}
-    <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，提取关键词:<input class="form-control keywords" type="text" name="label_text" value="{{ c.label_text }}"></div>
+    <div id="8" class="row sideBar-body msg0">请根据对话{{ c.roundid }}，提取1到5个关键词，并用逗号隔开:<input class="form-control keywords" type="text" name="label_text" value="{{ c.label_text }}"></div>
 
   {% elif c.center_bool == 1 %}
   <form method="post" action="{% url 'polls:vote' c.id %}" id="round{{ c.roundid }}">
@@ -144,13 +171,12 @@
     <label for="2">拒绝</label><br />
     <input type="radio" name="label_text" id="3" value="ignored" />
     <label for="3">无视</label><br />
-
 </div>
   {% endif %}
-<input class="btn pull-right btn-success" type="submit" value="Submit" />
 
       </form>
-{% endfor %}
+{% endfor %} -->
+<!-- <input class="btn pull-right btn-success" type="button" value="Submit" onclick="submitForms()" /> -->
 
 <!-- <input class="btn pull-right btn-success" type="button" value="Submit" onclick="submitBoth()" /> -->
     
@@ -161,38 +187,36 @@
             <div class="col-sm-12 searchBox-inner">
               <div class="form-group has-feedback">
                 <a href="{% url 'polls:index' %}" class="previous">&laquo; Back to Profile Page</a>
+                {% if nextpk == 0 %}
+<a onclick="allLabeled()" class="next pull-right">Next Question &raquo;</a>
+                {% else %}
 <a href="{% url 'polls:detail' nextpk %}" class="next pull-right">Next Question &raquo;</a>
+{% endif %}
 
               </div>
             </div>
           </div>
           <!-- Sidebar End -->
         </div>
-
-        
         <!-- Sidebar End -->
       </div>
       <!-- SearchBox -->
-          
-
           <!-- Search Box End -->
 
-
       <!-- New Message Sidebar End -->
-
-     
     </div>
     <!-- App One End -->
   </div>
-<script> 
-function submitBoth(){
-    {% for c in label %}
-    document.getElementById("round{{ c.roundid }}").submit();
-    {% endfor %}
+<script>
+    {% if message %}
+      alert('{{ message }}');
+    {% endif %}
+</script>
+
+<script>
+function allLabeled() {
+    alert("All questions have been labeled. Click 'OK' to go back to Home page");
+    window.location.href = {% url 'polls:index' %};
 }
 </script>
-<!-- 
-<script>
-    alert('{{ message }}');
-</script> -->
 {% endblock %}

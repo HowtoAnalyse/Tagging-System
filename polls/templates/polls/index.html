@@ -2,46 +2,39 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-      <title>labeler - {% block title %}To add project name{% endblock %}</title>
+      <title>labeller - {% block title %}To add project name{% endblock %}</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-      <link href="{% static 'css/qa.css' %}" rel="stylesheet"/>
-        <!-- Font Awesome File -->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-      <script type="text/javascript" src="{% static 'labeler/script.js' %}"></script>
-
     </head>
 
     <body>
 
+
+
+<div class="container">
 <div class="page-header">
   <h1><a href="{% url 'polls:index' %}"><orange>Project Name</orange> </a><small>Text data labeling</small></h1>
 </div>
-
-<div class="container">
-
 <div class="col-md-8">
 
     <ul class="nav nav-tabs nav-justified">
         <li role="presentation" {% if active_tab == 'latest' %}class="active"{% endif %}><a href="#latest" data-toggle="tab"><span class="glyphicon glyphicon-th-list"></span> Export</a></li>
-        <li role="presentation" {% if active_tab == 'unans' %}class="active"{% endif %}><a href="#unans" data-toggle="tab"><span class="glyphicon glyphicon-question-sign"></span> Unanswered <span class="badge">{{ totalnoans }}</span></a></li>
+        <li role="presentation" {% if active_tab == 'unans' %}class="active"{% endif %}><a href="#unans" data-toggle="tab"><span class="glyphicon glyphicon-question-sign"></span> Unlabelled <span class="badge">{{ totalnoans }}</span></a></li>
     </ul>
     <br/>
 <div class="tab-content">
 <div class="tab-pane {% if active_tab == 'latest' %}active{% endif %}" id="latest">
-<a href="{% url 'polls:downl' %}">Download Labeled Data</a>
+<a href="{% url 'polls:downl' %}">Download Labelled Data</a>
 </div>
 
 <div class="tab-pane {% if active_tab == 'unans' %}active{% endif %}" id="unans">
 {% if noans %}
 
-<span class="glyphicon glyphicon-fire" aria-hidden="true"></span><a href="{% url 'polls:detail' noans.0.id %}"> Start Labeling</a>
+<span class="glyphicon glyphicon-fire" aria-hidden="true"></span><a href="{% url 'polls:detail' noans.0.id %}"> Start Labelling</a>
 
 {% else %}
-<div class="alert alert-warning" role="alert">No Questions are available!</div>
+<div class="alert alert-warning" role="alert">All questions have been labelled!</div>
 {% endif %}
 </div>
 
@@ -63,13 +56,14 @@
   {% if noans.count %}
   <div class="panel panel-warning">
     <div class="panel-heading">
-      <h3 class="panel-title">Unanswered Questions</h3>
+      <h3 class="panel-title">Unlabelled Questions</h3>
     </div>
     <div class="panel-body">
     <ul>
-      {% for question in noans %}
+      {% for question in noans|slice:":10" %}
       <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
       {% endfor %}
+      <li><a href="">...</a></li>
     </ul>
     </div>
   </div>
@@ -83,25 +77,8 @@
 
 </div>
 
-{% block js %}
-<script>
-$(function () {
-  $('a[href="#search"]').on('click', function(event) {
-    event.preventDefault();
-    $('#search').addClass('open');
-    $('#search > form > input[type="search"]').focus();
-  });
-
-  $('#search, #search button.close').on('click keyup', function(event) {
-    if (event.target == this || event.target.className == 'close' || event.keyCode == 27) {
-      $(this).removeClass('open');
-    }
-  });
-
-});
-</script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-{% endblock js %}
-{%block extra_js %}{% endblock extra_js %}
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
     </body>
 </html>

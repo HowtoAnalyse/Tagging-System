@@ -3,3 +3,5 @@ migrations/
 __pycache__/
 Archive.zip
 *.csv
+settings.py
+cloud_sql_proxy

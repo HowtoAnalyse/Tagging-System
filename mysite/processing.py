@@ -1,5 +1,5 @@
 import pandas as pd
-raw = pd.read_csv("mysite/raw.csv")
+raw = pd.read_csv("mysite/raw.csv", nrows=238)
 import os
 
 raw = raw.fillna("...") #96180
@@ -33,7 +33,7 @@ for i in msgID:
 # df.columns = ['roundid', 'speaker', 'Conversation_txt', 'question_id']
 import sqlite3
 
-conn = sqlite3.connect('db.sqlite3')
+conn = MySQLdb.connect("127.0.0.1","sara302","skip200Gram","polls" )
 lRaw = raw.drop_duplicates(subset=['msg_id', 'round'], keep="last")
 lDF = pd.DataFrame()
 n=1
@@ -96,5 +96,84 @@ for idx, row in qRaw.iterrows():
 		n += 1
 	except:
 		qDF = qDF.append(row)
+
+conn.close()
+
+# mysql
+import MySQLdb
+
+conn = MySQLdb.connect("127.0.0.1","sara302","skip200Gram","polls",charset='utf8',use_unicode=True)
+c = conn.cursor()
+c.execute("delete from polls_conversation;")
+conn.commit()
+c.execute("delete from polls_label;")
+conn.commit()
+c.execute("delete from polls_question;")
+conn.commit()
+
+
+c.execute("describe polls_question;")
+conn.commit()
+
+c.execute("alter table polls_conversation DEFAULT CHARACTER SET utf8;")
+conn.commit()
+c.execute("alter table polls_label DEFAULT CHARACTER SET utf8;")
+conn.commit()
+
+# c.execute("delete from polls_conversation")
+# conn.commit()
+
+
+# c.fetchall()
+# alter table TableName DEFAULT CHARACTER SET utf8;
+# id, question_text, labeled, pub_date
+qRaw = raw.drop_duplicates(subset='msg_id', keep="last")
+qDF = pd.DataFrame()
+n=1
+for idx, row in qRaw.iterrows():
+	try:
+		sql = "insert into polls_question values ({}, 'question_{}',0,now()".format(row[0], row[0]) + ");"
+		c = conn.cursor()
+		c.execute(sql)
+		conn.commit()
+		n += 1
+	except:
+		qDF = qDF.append(row)
+
+# id, roundid, center_bool, label_text, question_id
+lRaw = raw.drop_duplicates(subset=['msg_id', 'round'], keep="last")
+lDF = pd.DataFrame()
+n=1
+for idx, row in lRaw.iterrows():
+	try:
+		sql = "insert into polls_label values ({},{},{}, 'NA',{}".format(idx, row[1], row[2], row[0]) + ");"
+		c = conn.cursor()
+		c.execute(sql)
+		conn.commit()
+		n += 1
+	except:
+		lDF = lDF.append(row)
+
+# id, roundid, speaker, center_bool, conversation_txt, question_id
+tmpDF = pd.DataFrame()
+for idx, row in raw.iterrows():
+	try:
+		sql = "insert into polls_conversation values ({}, {}, \'{}\', {},\'{}\', {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
+		c = conn.cursor()
+		c.execute(sql)
+		conn.commit()
+	except:
+		tmpDF = tmpDF.append(row)
+
+errorDF = pd.DataFrame()	
+for idx, row in tmpDF.iterrows():
+	try:
+		sql = "insert into polls_conversation values ({}, {}, \"{}\", {},\"{}\", {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
+		c = conn.cursor()
+		c.execute(sql)
+		conn.commit()
+	except:
+		errorDF = errorDF.append(row)
+## labels
 
 conn.close()
