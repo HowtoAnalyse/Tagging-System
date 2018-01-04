@@ -203,7 +203,7 @@ function validateInput()
     {% endif %}
   {% endfor %}
   if (valid) {
-      document.getElementById["subm"].submit();
+      document.forms["subm"].submit();
   } else {
     alert(txt.join("\n"))
   }
