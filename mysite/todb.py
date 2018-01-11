@@ -21,12 +21,11 @@ conn.commit()
 c.execute("delete from polls_label;")
 conn.commit()
 
-# c.execute("delete from polls_question;")
-# conn.commit()
+c.execute("delete from polls_question;")
+conn.commit()
 
 
-# c.execute("describe polls_question;")
-# conn.commit()
+
 
 c.execute("alter table polls_conversation DEFAULT CHARACTER SET utf8;")
 conn.commit()
@@ -41,30 +40,32 @@ conn.commit()
 # alter table TableName DEFAULT CHARACTER SET utf8;
 # id, question_text, labeled, pub_date
 qRaw = raw.drop_duplicates(subset='msg_id', keep="last")
-gDF = pd.DataFrame()
-n=1
-for idx, row in qRaw.iterrows():
-	sql = "update polls_question set groupid = " + str(n%8+1) + " where id=" + str(row['msg_id'])
-	try:
-		c.execute(sql)
-		conn.commit()
-	except:
-		gDF = gDF.append(row)
-	n += 1
+# gDF = pd.DataFrame()
+# n=1
+# for idx, row in qRaw.iterrows():
+# 	sql = "update polls_question set groupid = " + str(n%8+1) + " where id=" + str(row['msg_id'])
+# 	try:
+# 		c.execute(sql)
+# 		conn.commit()
+# 	except:
+# 		gDF = gDF.append(row)
+# 	n += 1
 
 
+c.execute("describe polls_question;")
+c.fetchall()
 
 qDF = pd.DataFrame()
 n=1
 for idx, row in qRaw.iterrows():
 	try:
-		sql = "insert into polls_question values ({}, 'question_{}',0,now()".format(row[0], row[0]) + ");"
+		sql = "insert into polls_question values ({}, 'question_{}',0,{}".format(row[0], row[0],str(n%8+1)) + ");"
 		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
-		n += 1
 	except:
 		qDF = qDF.append(row)
+	n += 1
 
 # id, roundid, center_bool, label_text, question_id
 lRaw = raw.drop_duplicates(subset=['msg_id','round','speaker'], keep="first")
@@ -96,7 +97,7 @@ for idx, row in raw.iterrows():
 
 errorDF = pd.DataFrame()	
 for idx, row in tmpDF.head().iterrows():
-	sql = "insert into polls_conversation values ({}, {}, \"{}\", {},\"{}\", {}".format(idx, row[1], row[3], row[2],row[4], row[0]) + ");"
+	sql = "insert into polls_conversation values ({}, {}, \"{}\", {},\"{}\", {}".format(idx+1, row[1], row[3], row[2],row[4], row[0]) + ");"
 	try:
 		c.execute(sql)
 		conn.commit()

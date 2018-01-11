@@ -5,6 +5,10 @@ from django.utils import timezone
 
 
 class Question(models.Model):
+    msgid=models.IntegerField(default=0)
+    roundid=models.IntegerField()
+    center_bool=models.IntegerField(default=0)
+    speaker=models.CharField(max_length=200)
     question_text = models.CharField(max_length=200)
     groupid = models.IntegerField(default=1)
     labeled = models.BooleanField(default=False)

@@ -15,10 +15,8 @@ class IndexView(LoginRequiredMixin,generic.ListView):
     """CBV to render the index view
     """
     model = Question
-    paginate_by = 10
     context_object_name = 'questions'
     template_name = 'polls/index.html'
-    ordering = '-pub_date'
 
     def get_context_data(self, *args, **kwargs):
         context = super(
@@ -26,13 +24,12 @@ class IndexView(LoginRequiredMixin,generic.ListView):
         noans = Question.objects.filter(
             labeled=False
             )
-        context['totalcount'] = Question.objects.count()
-        context['active_tab'] = self.request.GET.get('active_tab', 'latest')
-        tabs = ['latest', 'unans', 'reward']
-        context['active_tab'] = 'latest' if context['active_tab'] not in\
-            tabs else context['active_tab']
-
-        context['totalnoans'] = noans.count()
+        # context['totalcount'] = Question.objects.count()
+        # context['active_tab'] = self.request.GET.get('active_tab', 'latest')
+        # tabs = ['latest', 'unans', 'reward']
+        # context['active_tab'] = 'latest' if context['active_tab'] not in\
+        #     tabs else context['active_tab']
+        # context['totalnoans'] = noans.count()
         context['noans'] = noans
         return context
 
